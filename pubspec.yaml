@@ -1,0 +1,3 @@
+dependencies:
+  DartRedisClient:
+    git: git://github.com/nelsonsilva/DartRedisClient.git
