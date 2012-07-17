@@ -48,8 +48,7 @@ class OpSink {
 
     // A timeout is used so if the user sends multiple ops at the same time, they'll be composed
     // & sent together.
-    //new Timer(0, (Timer timer) => flush() );
-    window.setTimeout(flush, 0);
+    new Timer(0, (Timer timer) => flush() );
     
     return completer.future;
   }
@@ -80,7 +79,7 @@ class OpSink {
         // Wait for the aknowledge
         .waitFor((reply) => 
             (reply.op == null && reply.version != null) || 
-            ((reply.op!=null) && (_inflightSubmittedIds.indexOf(reply.meta.source) != -1)))
+            ((reply.op != null) && (reply.meta != null) && (_inflightSubmittedIds.indexOf(reply.meta.source) != -1)))
         .then((Message msg) {
           // Our inflight op has been acknowledged.
           var oldInflightOp = _inflightOp;
@@ -125,7 +124,9 @@ class OpSink {
         
             //_serverOps[version.toString()] = oldInflightOp;
             doc.version++;
-            //_inflightCallbacks.forEach((c)=>c.complete(oldInflightOp));
+            
+            // TODO - notify the proper completer!
+            _inflightCallbacks.forEach((c)=>c.complete(oldInflightOp));
           }
         
           // Send the next op.

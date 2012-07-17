@@ -1,14 +1,12 @@
 #library('client');
 
-#import('dart:html');
 #import('dart:json');
 #import('dart:isolate');
 
 #import('../shared/events.dart', prefix:'event');
 
-#source('../shared/operation.dart');
-#source('../shared/types/text.dart');
-#source('../shared/types/text_doc.dart');
+#import('../shared/operation.dart');
+#source("../shared/types/text_doc.dart");
 #source('../shared/message.dart');
 
 #source('op_sink.dart');
@@ -18,7 +16,9 @@
 class Client {
   Map<String, Connection> _connections;
   
-  Client() : _connections = <Connection>{};
+  Connection connectionFactory;
+  
+  Client(this.connectionFactory) : _connections = <Connection>{};
   
   /**
    * */
@@ -29,13 +29,15 @@ class Client {
     if (_connections.containsKey(origin)){
       return new Future.immediate(_connections[origin]);
     }
-    var c = new Connection(origin);
-    var del = (_) => _connections.remove(origin);
-    c.on.disconnecting.add(del);
-    c.on.connectFailed.add(del);
     
-    var doConnect = c.connect();
-    doConnect.then((c) => _connections[origin] = c);
+    var doConnect = connectionFactory.connect(origin);
+    
+    doConnect.then((c) {
+      var del = (_) => _connections.remove(origin);
+      c.on.disconnecting.add(del);
+      c.on.connectFailed.add(del);
+      _connections[origin] = c;
+    });
     return doConnect;
   }
   

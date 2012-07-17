@@ -57,7 +57,6 @@ class WSConnection extends Connection {
   stop() => conn.close();
   send(Message msg) { 
     var str = msg.toJSON();
-    print('s->c $str');
     conn.send(str);
   }
 

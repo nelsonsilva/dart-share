@@ -33,6 +33,11 @@ startServer(String basePath) {
 }
 
 void main() {
+  // Compute base path for the request based on the location of the
+  // script and then start the server.
+  // File script = new File(new Options().script);
+  // Directory d = script.directorySync();
+  
   String d = "/home/nfgs/Programacao/Dart";
   startServer(d);
 }

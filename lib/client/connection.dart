@@ -45,8 +45,7 @@ class MessageHandler {
   }
 }
 
-class Connection implements event.Emitter<ConnectionEvents>{
-  WebSocket _ws;
+abstract class Connection implements event.Emitter<ConnectionEvents>{
   String _state;
   bool isConnected;
   String _lastReceivedDoc;
@@ -61,13 +60,13 @@ class Connection implements event.Emitter<ConnectionEvents>{
   
   ConnectionEvents on;
   
-  Connection(this.origin) 
+  Connection() 
     :   on = new ConnectionEvents(),
         _docs = <Doc>{}, 
         _messageHandlers = [];
   
-  Future<Connection> connect() {
-    var opening = new Completer();
+  Future<Connection> connect(String origin) {
+    this.origin = origin;
     
     _state = "connecting";
     isConnected = false;
@@ -91,71 +90,70 @@ class Connection implements event.Emitter<ConnectionEvents>{
       }
     });
     
-    _ws = new WebSocket("ws://$origin/ws");
-    
-    _ws.on.open.add((a) {
-      print("open $a");
-      isConnected = true;
-      opening.complete(this);
-    });
-    
-    _ws.on.close.add((c) {
-      print("close $c");
-      on.disconnected.dispatch(new ConnectionEvent());
-      isConnected = false;
-    });
-    
-    _ws.on.message.add((m) {
-      var str = m.data;
-      print("s->c ${m.data}");
-      var msg = new Message.fromJSON(str);
-      
-      // Fill in the docName
-      var docName = msg.doc;
-      
-      if (docName != null) {
-        _lastReceivedDoc = docName;
-      } else {
-        msg.doc = docName = _lastReceivedDoc;
-      }
-      
-      /* check if we're expecting this message 
-       * if so this message has already been handled */
-      if (_messageHandlers.some((fn) => fn(msg))) {
-        return;
-      }
-      
-      // All other messages go to the corresponding doc for handling
-      
-      if (_docs.containsKey(docName)) {
-        _docs[docName]._onMessage(msg);
-      } else {
-        print("Error: unhandled message $msg");
-      }
-      
-    });
-    
+    var opening = new Completer();
+    doConnect(opening);
     return opening.future;
   }
   
   Future<Message> waitFor(bool testFn(Message reply)) => new MessageHandler(this).waitFor(testFn);
   
   /** This will call @socket.onclose(), which in turn will emit the 'disconnected' event. */
-  disconnect() { 
-    _ws.close();
+  abstract doDisconnect();
+  abstract doConnect(Completer<Connection> completer);
+  abstract doSend(String msg);
+  
+  handleOpen(Completer<Connection> completer) {
+    isConnected = true;
+    completer.complete(this);
   }
   
+  handleClose() {
+    on.disconnected.dispatch(new ConnectionEvent());
+    isConnected = false;
+  }
+  
+  handleMessage(String str) {
+
+    print("s->c($id) ${str}");
+    var msg = new Message.fromJSON(str);
+    
+    // Fill in the docName
+    var docName = msg.doc;
+    
+    if (docName != null) {
+      _lastReceivedDoc = docName;
+    } else {
+      msg.doc = docName = _lastReceivedDoc;
+    }
+    
+    /* check if we're expecting this message 
+     * if so this message has already been handled */
+    if (_messageHandlers.some((fn) => fn(msg))) {
+      return;
+    }
+    
+    // All other messages go to the corresponding doc for handling
+    
+    if (_docs.containsKey(docName)) {
+      _docs[docName]._onMessage(msg);
+    } else {
+      print("Error: unhandled message $msg");
+    }
+      
+  }
+
   setState(state, [data]) {
     if (_state == state) {
       return;
     }
-   _state = state;
-   
-   if (state == 'disconnected') {
-     id = null;
-   }
-   on.disconnected.dispatch(new ConnectionEvent(data));
-  
+    _state = state;
+     
+    if (state == 'disconnected') {
+      id = null;
+    }
+    
+    on[state].dispatch(new ConnectionEvent(data));
+    
     // Documents could just subscribe to the state change events, but there's less state to
     // clean up when you close a document if I just notify the doucments directly.
     _docs.forEach( (docName, doc) => doc._connectionStateChanged(state, data));
@@ -175,8 +173,8 @@ class Connection implements event.Emitter<ConnectionEvents>{
     }
     
     var str = data.toJSON();
-    print('c->s  $str');
-    _ws.send(data.toJSON());
+    print('c($id)->s  $str');
+    doSend(data.toJSON());
     
     return new MessageHandler(this);
   }
@@ -214,5 +212,7 @@ class Connection implements event.Emitter<ConnectionEvents>{
     return doOpen;
   }
 
+  disconnect() => doDisconnect();
+  
   get isOk() => _state == "ok";
 }

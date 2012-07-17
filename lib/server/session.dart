@@ -177,6 +177,8 @@ class Session {
     // Its invalid to send a message to a closed session. We'll silently drop messages if the
     // session has closed.
     if (connection.ready) {
+      var str = response.toJSON();
+      print('s->c(${agent.sessionId}) $str');
       connection.send(response);
     }
   }

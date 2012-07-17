@@ -110,15 +110,17 @@ class Model implements event.Emitter<ModelEvents> {
         if (ops.length > 0) {
           // If there's enough ops, it might be worth spinning this out into a webworker thread.
           ops.forEach( (oldOp) {
-              // Dup detection works by sending the id(s) the op has been submitted with previously.
-              // If the id matches, we reject it. The client can also detect the op has been submitted
-              // already if it sees its own previous id in the ops it sees when it does catchup.
-              if (oldOp.meta.source != null && opData.dupIfSource && opData.dupIfSource.indexOf(oldOp.meta.source) != -1) {
-                return callback('Op already submitted');
-              }
+            // Dup detection works by sending the id(s) the op has been submitted with previously.
+            // If the id matches, we reject it. The client can also detect the op has been submitted
+            // already if it sees its own previous id in the ops it sees when it does catchup.
+            
+            // TODO - deal with the dup ops!
+            //if (oldOp.meta.source != null && opData.dupIfSource && opData.dupIfSource.indexOf(oldOp.meta.source) != -1) {
+            //   return callback('Op already submitted');
+            //}
   
-              opData.op = doc.type.transform(opData.op, oldOp.op, left: true);
-              opData.version++;
+            opData.op = doc.type.transform(opData.op, oldOp.op, left: true);
+            opData.version++;
           });
           //catch error
           //  console.error error.stack

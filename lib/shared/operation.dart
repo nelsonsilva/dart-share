@@ -1,3 +1,7 @@
+#library("ot");
+#source("types/text.dart");
+#source("types/json.dart");
+
 _OT get OT() => new _OT();
 
 class _OT {

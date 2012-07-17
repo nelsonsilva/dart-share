@@ -9,8 +9,8 @@
 
 #import('../shared/events.dart', prefix:'event');
 
-#source('../shared/operation.dart');
-#source('../shared/types/text.dart');
+#import('../shared/operation.dart');
+
 #source('../shared/message.dart');
 #source('doc.dart');
 #source('util/cache.dart');
@@ -28,22 +28,23 @@
 class Server {
   HttpServer httpServer;
   WebSocketHandler wsHandler;
-  
-  int sessionId = 0;
+  Model model;
   
   Server(this.httpServer) {
     DB db = new DB();
-    Model docDAO = new Model(db);
+    model = new Model(db);
     
     wsHandler = new WebSocketHandler();
     
     httpServer.addRequestHandler((req) => req.path == "/ws", wsHandler.onRequest);
     
     wsHandler.onOpen = (WebSocketConnection conn) { 
-      new Session(new WSConnection(conn), docDAO);
+      new Session(new WSConnection(conn), model);
     };
   }
-
 }
 
-attach(HttpServer httpServer) => new Server(httpServer);
+HttpServer attach(HttpServer httpServer) {
+  var share = new Server(httpServer);
+  return share.httpServer;
+}
