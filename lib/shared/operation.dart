@@ -5,9 +5,17 @@
 _OT get OT() => new _OT();
 
 class _OT {
-  static get Text() => new OTText();
-  
-  OTType operator [](String type) => new OTText();
+
+  OTType operator [](String type) {
+    switch (type) {
+      case "text":
+        return new OTText();
+      case "json":
+        return new OTJSON();
+      default:
+        throw new Exception("Unknown OT type");
+    }
+  }
 }
 
 class OTType<S, O extends Operation> {
