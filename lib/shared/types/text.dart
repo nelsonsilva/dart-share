@@ -216,6 +216,10 @@ class TextOperationComponent extends OperationComponent {
     return m;
   }
   
+  clone() {
+    return new TextOperationComponent._internal(type, text, pos);
+  }
+  
   bool operator ==(TextOperationComponent other) => other!=null && type == other.type && pos == other.pos && text == other.text;
 }
 

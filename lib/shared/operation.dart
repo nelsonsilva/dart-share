@@ -60,6 +60,7 @@ class Pair<A,B> {
 
 class OperationComponent {
   abstract Map toMap();
+  abstract clone();
   abstract bool operator ==(OperationComponent other);
 }
 
@@ -84,7 +85,7 @@ class Operation<C extends OperationComponent> implements Collection<C> {
       
   Operation compose(Operation op2) {  
     var newOp = clone();
-    newOp.appendAll(op2._ops);
+    newOp.appendAll(op2._ops.map((oc) => oc.clone()));
     return newOp;
   }
   
@@ -139,7 +140,7 @@ class Operation<C extends OperationComponent> implements Collection<C> {
   
   Operation<C> clone() {
     var op = _newOp();
-    op._ops.addAll(_ops);
+    op._ops.addAll(_ops.map((oc)=>oc.clone()));
     return op;
   }
   
