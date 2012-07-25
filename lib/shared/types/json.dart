@@ -72,7 +72,7 @@ class OTJSON extends OTType<Object, JSONOperation>{
           _checkIsObject(elem);
           
           // Should check that elem[key] == c.od
-          elem[key] = component.data;
+          elem[key] = component.obj;
           break;
         case JSONOperationComponent.OBJECT_DELETE:   
           _checkIsObject(elem);
@@ -198,9 +198,9 @@ class JSONOperation extends Operation<JSONOperationComponent> implements Inverti
 
   // For simplicity, this version of append does not compress adjacent inserts and deletes of
   // the same text. It would be nice to change that at some stage.
-  append(JSONOperationComponent c) {
+  //append(JSONOperationComponent c) {
    // TODO
-  }
+  //}
   
   // This helper method transforms a position by an op component.
   //
@@ -216,15 +216,15 @@ class JSONOperation extends Operation<JSONOperationComponent> implements Inverti
     var p1 = new List.from(path1);
     var p2 = new List.from(path2);
     
+    if (p2.length == 0) { 
+      return -1;
+    }
+    
     p1.insertRange(0, 1, 'data');
     p2.insertRange(0, 1, 'data');
     
     p1 = p1.getRange(0, p1.length-1);
     p2 = p2.getRange(0, p2.length-1);
-    
-    if (p2.length == 0) { 
-      return -1;
-    }
     
     var i = 0;
     while (i < p1.length && p1[i] == p2[i]) {
@@ -273,6 +273,72 @@ class JSONOperation extends Operation<JSONOperationComponent> implements Inverti
     return;
   }
   
+  _handleListMoveVsListMove(JSONOperationComponent c, JSONOperationComponent otherC, int common, [bool left=false, bool right=false]) {
+    int from = c.path[common],
+        to = c.index,
+        otherFrom = otherC.path[common],
+        otherTo = otherC.index;
+    
+    if (otherFrom != otherTo) {
+      // if otherFrom == otherTo, we don't need to change our op.
+  
+      // where did my thing go?
+      if (from == otherFrom) {
+        // they moved it! tie break.
+        if (left) {
+          c.path[common] = otherTo;
+          if (from == to) { // # ugh
+            c.index = otherTo;
+          }
+        } else {
+          return;
+        }
+        
+      } else {
+        // they moved around it
+        if (from > otherFrom) {
+          c.path[common]--;
+        }
+        if (from > otherTo) {
+          c.path[common]++;
+        } else if (from == otherTo) {
+          if (otherFrom > otherTo) {
+            c.path[common]++;
+            if (from == to) { // ugh, again
+              c.index++;
+            }
+          }
+        }
+  
+        // step 2: where am i going to put it?
+        if (to > otherFrom) {
+          c.index--;
+        } else if (to == otherFrom) {
+          if (to > from) {
+            c.index--;
+          }
+        }
+        if (to > otherTo) {
+          c.index++;
+        } else if (to == otherTo) {
+          // if we're both moving in the same direction, tie break
+          if ( (otherTo > otherFrom && to > from) ||
+               (otherTo < otherFrom && to < from) ) {
+            if (right) {
+              c.index++;
+            }
+          } else {
+            if (to > from) {
+              c.index++;
+            } else if (to == otherFrom) {
+              c.index--;
+            }
+          }
+        }
+      }
+    }
+  }
+            
   transformComponent(JSONOperationComponent c, JSONOperationComponent otherC, [bool left = false, bool right = false]) {
     c = c.clone();
     
@@ -301,74 +367,138 @@ class JSONOperation extends Operation<JSONOperationComponent> implements Inverti
       }
     }
     
-    if (common != null) {
-      cplength = otherCplength;
-      var commonOperand = cplength;
-      
-      if (otherC.isStringInsert() || otherC.isStringDelete()) {
-        // String op vs string op - pass through to text type
-        if (c.isStringInsert() || c.isStringDelete()) {
-          if (commonOperand == null) { throw new Exception("must be a string?"); }
-          return _handleStringVsString(c, otherC, common, left:left, right:right);
-        }
-      } // TODO - else if (otherC.isListReplace()) 
-      else if (otherC.isListInsert()) {
-        if (c.isListInsert() && commonOperand != null && c.path[common] == otherC.path[common]) {
-          // in li vs. li, left wins.
-          if (right) {
-            c.path[common]++;
-          }
-        } else if (otherC.path[common] <= c.path[common]){
-          c.path[common]++;
-        }
-        
-        if (c.isListMove()) {
-          if (commonOperand != null) {
-            // otherC edits the same list we edit
-            if (otherC.path[common] <= c.index) {
-                c.data++;
-            }
-            // changing c.from is handled above.
-          }
-        }
-      } else if (otherC.isListDelete()) {
-        if (c.isListMove()) {
-          if (commonOperand != null) {
-            if (otherC.path[common] == c.path[common]) {
-              // they deleted the thing we're trying to move
-              return;
-            }
-            // otherC edits the same list we edit
-            var p = otherC.path[common];
-            var from = c.path[common];
-            var to = c.index;
-            if ( p < to || (p == to && from < to) ) {
-              c.index--;
-            }
-          }
-        }
-        
-        if (otherC.path[common] < c.path[common]) {
-          c.path[common]--;
-        } else if (otherC.path[common] == c.path[common]) {
-          if (otherCplength < cplength) {
-            // we're below the deleted element, so -> noop
-            return;
-          } else if (c.isListDelete()){
-            //if c.li != undefined
-            //  # we're replacing, they're deleting. we become an insert.
-            //  delete c.ld
-            //else
-              // we're trying to delete the same element, -> noop
-              return;
-          }
-        }
-      } 
-
-      
-      
+    // Nothing in common so no  need to transform
+    if (common == null) {
+      add(c);
+      return;
     }
     
+    // Let's keep going
+    cplength = otherCplength;
+    var commonOperand = cplength;
+    
+    // String op vs string op - pass through to text type
+    if ( (otherC.isStringInsert() || otherC.isStringDelete()) &&
+         (c.isStringInsert() || c.isStringDelete()) ) {
+      if (commonOperand == null) { throw new Exception("must be a string?"); }
+      return _handleStringVsString(c, otherC, common, left:left, right:right);
+    } // TODO - else if (otherC.isListReplace()) 
+    else if (otherC.isListInsert()) {
+      if (c.isListInsert() && commonOperand != null && c.path[common] == otherC.path[common]) {
+        // in li vs. li, left wins.
+        if (right) {
+          c.path[common]++;
+        }
+      } else if (otherC.path[common] <= c.path[common]){
+        c.path[common]++;
+      }
+      
+      if (c.isListMove()) {
+        if (commonOperand != null) {
+          // otherC edits the same list we edit
+          if (otherC.path[common] <= c.index) {
+              c.data++;
+          }
+          // changing c.from is handled above.
+        }
+      }
+    } else if (otherC.isListDelete()) {
+      if (c.isListMove()) {
+        if (commonOperand != null) {
+          if (otherC.path[common] == c.path[common]) {
+            // they deleted the thing we're trying to move
+            return;
+          }
+          // otherC edits the same list we edit
+          var p = otherC.path[common];
+          var from = c.path[common];
+          var to = c.index;
+          if ( p < to || (p == to && from < to) ) {
+            c.index--;
+          }
+        }
+      }
+      
+      if (otherC.path[common] < c.path[common]) {
+        c.path[common]--;
+      } else if (otherC.path[common] == c.path[common]) {
+        if (otherCplength < cplength) {
+          // we're below the deleted element, so -> noop
+          return;
+        } else if (c.isListDelete()){
+          //if c.li != undefined
+          //  # we're replacing, they're deleting. we become an insert.
+          //  delete c.ld
+          //else
+            // we're trying to delete the same element, -> noop
+            return;
+        }
+      }
+    } else if (otherC.isListMove()) {
+      if (c.isListMove() && cplength == otherCplength) {
+        // lm vs lm, here we go!
+        _handleListMoveVsListMove(c, otherC, common, left:left, right:right);
+          
+      /* TODO - else if c.li != undefined and c.ld == undefined and commonOperand
+          # li
+          from = otherC.p[common]
+          to = otherC.lm
+          p = c.p[common]
+          if p > from
+            c.p[common]--
+          if p > to
+            c.p[common]++ */
+      } else {
+        // ld, ld+li, si, sd, na, oi, od, oi+od, any li on an element beneath
+        // the lm
+        //
+        // i.e. things care about where their item is after the move.
+        int from = otherC.path[common],
+            to = otherC.index,
+            p = c.path[common];
+        if (p == from) {
+          c.path[common] = to;
+        } else {
+          if (p > from) {
+            c.path[common]--;
+          }
+          if (p > to) {
+            c.path[common]++;
+          } else if (p == to) {
+            if (from > to) {
+              c.path[common]++;
+            }
+          }
+        }
+      }
+    // TODO - } else if (otherC.isObjectReplace()) {
+    } else if (otherC.isObjectInsert()) {
+      // oi vs oi
+      if (c.isObjectInsert() && c.path[common] == otherC.path[common]) {
+        // left wins if we try to insert at the same place
+        if (left) {
+          var key = c.path.last();
+          var path = c.path.getRange(0, c.path.length - 1);
+          OD(key, otherC.obj, path);
+        } else {
+          return;
+        }
+      }
+    } else if (otherC.isObjectDelete()) {
+      if (c.path[common] == otherC.path[common]) {
+        if (commonOperand == null) {
+          return;
+        }
+        if (c.isObjectInsert()) {
+          // TODO - If is replace keep insert and remove the delete - delete c.od
+        } else {
+          return;
+        }
+      }
+    }
+    
+    // Let's add the component
+    add(c);
   }
 }
 

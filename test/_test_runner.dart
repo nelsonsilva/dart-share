@@ -11,11 +11,13 @@
 
 #source('types/random_word.dart');
 #source('types/text.dart');
+#source('types/list.dart');
 #source('types/json.dart');
 #source('integration.dart');
 
 void runTests() {
   TestText.run();
+  TestList.run();
   TestJSON.run();
   IntegrationTests.run();
 }

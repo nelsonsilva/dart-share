@@ -68,22 +68,23 @@ class TestJSON {
       });
       
       test('Paths are bumped when list elements are inserted or removed', () {
-        /*
         expect(
           JSON.Op().SI('hi', 200, [2])
         , equals(
           JSON.transform(JSON.Op().SI('hi', 200, [1]), JSON.Op().LI(0, 'x'), left:true)
          ));
+        
         expect(
           JSON.Op().SI('hi', 201, [1])
         , equals(
           JSON.transform(JSON.Op().SI('hi', 201, [0]), JSON.Op().LI(0, 'x'), right:true)
          ));
+        
         expect(
           JSON.Op().SI('hi', 202, [0])
         , equals(
           JSON.transform(JSON.Op().SI('hi', 202, [0]), JSON.Op().LI(1, 'x'), left:true)
-         ));*/
+         ));
       });
       
     });

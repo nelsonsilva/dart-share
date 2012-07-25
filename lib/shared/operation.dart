@@ -1,21 +1,21 @@
 #library("ot");
 #source("types/text.dart");
+#source("types/list.dart");
 #source("types/json.dart");
 
 _OT get OT() => new _OT();
 
 class _OT {
 
-  OTType operator [](String type) {
-    switch (type) {
-      case "text":
-        return new OTText();
-      case "json":
-        return new OTJSON();
-      default:
-        throw new Exception("Unknown OT type");
-    }
-  }
+  Map<String, OTType> _types;
+  
+  _OT() :
+    _types = {"text": new OTText(),
+              "list": new OTList(),
+              "json": new OTJSON()};
+  
+  OTType operator [](String type) => _types[type];
+    
 }
 
 class OTType<S, O extends Operation> {
@@ -79,6 +79,7 @@ class Operation<C extends OperationComponent> implements Collection<C> {
       
   // Override to add and compose if possible
   append(C c) => add(c);
+  
   appendAll(Collection<C> lst) => lst.forEach((l) => append(l));
 
   Operation<C> compress() => _newOp().compose(this);
@@ -116,7 +117,7 @@ class Operation<C extends OperationComponent> implements Collection<C> {
        if(nextC.length == 1) {
          rightComponent = nextC[0];
        } else if(nextC.length == 0) {
-         newLeftOp.appendAll(leftOp.subList(k));
+         newLeftOp.appendAll(leftOp.subList(k).map((oc) => oc.clone()));
          rightComponent = null;
          break;
        } else {
@@ -129,9 +130,11 @@ class Operation<C extends OperationComponent> implements Collection<C> {
          }
        }
    
-       if(rightComponent != null) {
+       if (rightComponent != null) {
          newRightOp.append(rightComponent);
        }
+       
+       
        leftOp = newLeftOp;
      }
  
@@ -147,7 +150,7 @@ class Operation<C extends OperationComponent> implements Collection<C> {
   // Return a new operation with the list of ops starting at start
   Operation<C> subOp(int startIdx) {
     Operation op = _newOp();
-    op._ops = this.subList(startIdx);
+    op._ops = this.subList(startIdx).map((oc) => oc.clone());
     return op;
   }
 
