@@ -40,6 +40,9 @@ class TextOperation extends Operation<TextOperationComponent> implements Inverti
   
   TextOperation();
   
+  // TODO - ugly....
+  String get oTType => "text";
+  
   TextOperationComponent _I(String text, num pos) => new TextOperationComponent.insert(text, pos);
   TextOperationComponent _D(String text, num pos) => new TextOperationComponent.delete(text, pos);
   

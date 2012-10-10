@@ -2,16 +2,17 @@
 
 #import('dart:json');
 #import('dart:isolate');
+#import('dart:math', prefix:'Math');
 
-#import('../shared/events.dart', prefix:'event');
+#import('src/shared/events.dart', prefix:'event');
 
-#import('../shared/operation.dart');
-#source("../shared/types/text_doc.dart");
-#source('../shared/message.dart');
+#import('src/shared/operation.dart');
+#source("src/shared/types/text_doc.dart");
+#source('src/shared/message.dart');
 
-#source('op_sink.dart');
-#source('doc.dart');
-#source('connection.dart');
+#source('src/client/op_sink.dart');
+#source('src/client/doc.dart');
+#source('src/client/connection.dart');
 
 class Client {
   Map<String, Connection> _connections;

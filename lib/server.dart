@@ -3,27 +3,28 @@
 #import('dart:io');
 #import('dart:json');
 #import('dart:isolate');
+#import('dart:math', prefix:'Math');
 
 // TODO - Use packages:...
-#import('../../packages/DartRedisClient/RedisClient.dart');
+// #import('../../packages/DartRedisClient/RedisClient.dart');
 
-#import('../shared/events.dart', prefix:'event');
+#import('src/shared/events.dart', prefix:'event');
 
-#import('../shared/operation.dart');
+#import('src/shared/operation.dart');
 
-#source('../shared/message.dart');
-#source('doc.dart');
-#source('util/cache.dart');
-#source('util/stats.dart');
-#source('util/sync_queue.dart');
-#source('model.dart');
+#source('src/shared/message.dart');
+#source('src/server/doc.dart');
+#source('src/server/util/cache.dart');
+#source('src/server/util/stats.dart');
+#source('src/server/util/sync_queue.dart');
+#source('src/server/model.dart');
 
-#source('db/db.dart');
-#source('db/redis.dart');
+#source('src/server/db/db.dart');
+#source('src/server/db/redis.dart');
 
-#source('connection.dart');
-#source('session.dart');
-#source('user_agent.dart');
+#source('src/server/connection.dart');
+#source('src/server/session.dart');
+#source('src/server/user_agent.dart');
 
 class Server {
   HttpServer httpServer;

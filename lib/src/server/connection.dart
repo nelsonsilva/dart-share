@@ -39,12 +39,6 @@ class WSConnection extends Connection {
       print('closed with $status for $reason');
       _handleClose();
     };
-          
-    conn.onError = (e) {
-      print('WSConnection Error : $e');
-      _handleClose();
-    };
-    
    
   }
   

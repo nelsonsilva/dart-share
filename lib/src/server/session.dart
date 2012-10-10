@@ -380,9 +380,9 @@ class Session {
     var completer = new Completer<bool>();
     try {
       close(query.doc);
-    } catch (Exception error) {
+    } on Exception catch (error) {
       // An error closing still results in the doc being closed.
-      send(new Message(doc:query.doc, open:false, error:error));
+      send(new Message(doc:query.doc, open:false, error:error.toString()));
       completer.complete(false);
     }
     send(new Message(doc:query.doc, open:false));

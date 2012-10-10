@@ -1,8 +1,8 @@
 #import('dart:html');
 #import('dart:isolate');
 
-#import('../../lib/client/client.dart', prefix:'share');
-#import('../../lib/client/ws/connection.dart', prefix:'ws');
+#import('package:dart-share/client.dart', prefix:'share');
+#import('package:dart-share/src/client/ws/connection.dart', prefix:'ws');
 #source('text_area.dart');
 
 main(){

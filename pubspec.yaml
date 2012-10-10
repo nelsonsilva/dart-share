@@ -1,3 +1,8 @@
+name: dart-share
+version: 0.0.1
+description: >
+  A port of ShareJS to Dart.
+author:
+- Nelson Silva <nelson.silva@inevo.pt>
 dependencies:
-  DartRedisClient:
-    git: git://github.com/nelsonsilva/DartRedisClient.git
+  unittest: { sdk: unittest }

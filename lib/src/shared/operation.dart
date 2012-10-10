@@ -1,24 +1,15 @@
 #library("ot");
+
+#import("dart:math", prefix:"Math");
 #source("types/text.dart");
 #source("types/list.dart");
 #source("types/json.dart");
 
-_OT get OT() => new _OT();
-
-class _OT {
-
-  Map<String, OTType> _types;
+var OT = {"text": new OTText(),
+          "list": new OTList(),
+          "json": new OTJSON()};
   
-  _OT() :
-    _types = {"text": new OTText(),
-              "list": new OTList(),
-              "json": new OTJSON()};
-  
-  OTType operator [](String type) => _types[type];
-    
-}
-
-class OTType<S, O extends Operation> {
+abstract class OTType<S, O extends Operation> {
   
   final String name;
   
@@ -58,7 +49,7 @@ class Pair<A,B> {
   }
 }
 
-class OperationComponent {
+abstract class OperationComponent {
   abstract Map toMap();
   abstract clone();
   abstract bool operator ==(OperationComponent other);
@@ -72,11 +63,13 @@ interface NormalizableOperation<O> {
   O normalize();
  }
 
-class Operation<C extends OperationComponent> implements Collection<C> {
+abstract class Operation<C extends OperationComponent> implements Collection<C> {
   List<C> _ops;
   
   Operation() : _ops = [];
       
+  abstract String get oTType;
+  
   // Override to add and compose if possible
   append(C c) => add(c);
   
@@ -177,6 +170,8 @@ class Operation<C extends OperationComponent> implements Collection<C> {
   bool isEmpty() => _ops.isEmpty();
   void forEach(void f(C c)) => _ops.forEach(f);
   Collection map(f(C c)) => _ops.map(f);
+  Dynamic reduce(Dynamic initialValue,
+                 Dynamic combine(Dynamic previousValue, C element)) => _ops.reduce(initialValue, combine);
   Collection<C> filter(bool f(C c)) => _ops.filter(f);
   bool every(bool f(C c)) => _ops.every(f);
   bool some(bool f(C c)) => _ops.some(f);
@@ -187,5 +182,6 @@ class Operation<C extends OperationComponent> implements Collection<C> {
   C operator [](int index) => _ops[index];
   void operator []=(int index, C c) { _ops[index] = c; }
   C last() => _ops.last(); 
+  C removeLast() => _ops.removeLast();
   List<C> getRange(int start, int length) => _ops.getRange(start, length);
 }

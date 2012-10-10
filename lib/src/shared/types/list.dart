@@ -2,7 +2,7 @@ class OTList extends OTType<List, ListOperation>{
   OTList() : super("list");
   
   List create() => [];
-    
+  
   ListOperation createOp([List components]) {
     return Op(components.map((c) => new ListOperation.fromMap(c)));
   }
@@ -39,6 +39,11 @@ class OTList extends OTType<List, ListOperation>{
             list.insertRange(c.to, 1, e);
           }
           break;
+        case ListOperationComponent.AT:   
+          // Delegate to the OP
+          Operation dOp = c.obj as Operation;
+          list[c.index] = dOp.oTType.apply(list[c.index], (c.obj as Operation));
+          break;
         default:
           throw new Exception("Invalid operation component");
       }
@@ -51,10 +56,16 @@ class ListOperation extends Operation<ListOperationComponent> implements Inverti
   
   ListOperation();
   
+  // TODO - ugly....
+  String get oTType => "list";
+  
   ListOperationComponent _I(int index, Dynamic obj) => new ListOperationComponent.insert(index, obj);
   ListOperationComponent _D(int index, Dynamic obj) => new ListOperationComponent.delete(index, obj);
   ListOperationComponent _M(int index1, int index2) => new ListOperationComponent.move(index1, index2);
   ListOperationComponent _R(int index, Dynamic before, Dynamic after) => new ListOperationComponent.replace(index, before, after);
+  
+  // Allows using any op at the given index
+  ListOperationComponent _At(int index, Operation op) => new ListOperationComponent.at(index, op);
   
   // Operation builders
   ListOperation I(int index, Dynamic obj) {
@@ -77,7 +88,33 @@ class ListOperation extends Operation<ListOperationComponent> implements Inverti
     return this;
   }
   
+  ListOperation At(int index, Operation op) {
+    this.add(_At(index, op));
+    return this;
+  }
+  
   ListOperation _newOp() => new ListOperation();
+  
+  // Override to add and compose if possible
+  append(ListOperationComponent c) {
+    c = c.clone();
+   
+    if (this.length != 0 && c.index == this.last().index) {
+      var lastC = this.last();
+      if (lastC.isInsert() && c.isDelete() && c.obj == lastC.obj) {
+        // insert immediately followed by delete becomes a noop.
+       this.removeLast();
+      } else if (lastC.isReplace() && lastC.obj != null) {
+        lastC.obj = c.obj;
+      } else if (c.isMove() && c.from == c.to) {
+        // don't do anything
+      } else {
+        add(c);
+      }
+    } else {
+      add(c);
+    }
+  }
   
   ListOperationComponent invertComponent(ListOperationComponent c) {
     // TODO
@@ -99,7 +136,7 @@ class ListOperation extends Operation<ListOperationComponent> implements Inverti
     // TODO
   }
   
-  _handleListMoveVsListMove(JSONOperationComponent c, JSONOperationComponent other, bool left) {
+  _handleListMoveVsListMove(ListOperationComponent c, ListOperationComponent other, bool left) {
     int from = c.from,
         to = c.to;
     
@@ -113,7 +150,7 @@ class ListOperation extends Operation<ListOperationComponent> implements Inverti
     if (c.from == other.from) {
       // they moved it! tie break.
       if (left) {
-        from = other.o;
+        c.from = other.to;
         if (c.from == c.to) { // # ugh
           to = other.to;
         }
@@ -233,7 +270,7 @@ class ListOperation extends Operation<ListOperationComponent> implements Inverti
       }
     }
     
-    if (otherC.delete < c.from) {
+    if (otherC.index < c.from) {
       c.from--;
     } else if (otherC.index == c.from) {
       if (c.isReplace()){
@@ -292,25 +329,27 @@ class ListOperation extends Operation<ListOperationComponent> implements Inverti
     c = c.clone();
     
     if (otherC.isReplace()) {
-      _handleOtherReplace(c, otherC, left:left, right:right);
+      _handleOtherReplace(c, otherC, left);
     } else if (otherC.isInsert()) {
-      _handleOtherInsert(); 
-    } else if (otherC.isListDelete()) {
-      _handleOtherDelete();
-    } else if (otherC.isListMove()) {
-      _handleOtherMove();
+      _handleOtherInsert(c, otherC, left); 
+    } else if (otherC.isDelete()) {
+      _handleOtherDelete(c, otherC);
+    } else if (otherC.isMove()) {
+      _handleOtherMove(c, otherC, left);
     }   
     // Let's add the component
-    add(c);
+    //add(c);
   }
 }
 
 class ListOperationComponent extends OperationComponent {
  
-  static final String INSERT = "li";
-  static final String DELETE = "ld";
-  static final String MOVE = "lm";
-  static final String REPLACE = "lr"; // this is li + ld in sharejs
+  static const String INSERT = "li";
+  static const String DELETE = "ld";
+  static const String MOVE = "lm";
+  static const String REPLACE = "lr"; // this is li + ld in sharejs
+  
+  static const String AT = "at";
   
   /** This can be 
    *  - an obj for li and ld
@@ -360,12 +399,15 @@ class ListOperationComponent extends OperationComponent {
   factory ListOperationComponent.replace(int index, Dynamic before, Dynamic after) => 
       new ListOperationComponent._internal( REPLACE, index, [before, after]);
   
+  factory ListOperationComponent.at(int index, Operation op) => 
+      new ListOperationComponent._internal( AT, index, op);
+  
   bool isInsert() => type == INSERT;
   bool isDelete() => type == DELETE;
   bool isMove() => type == MOVE;
   bool isReplace() => type == REPLACE;
   
-  
+
   factory ListOperationComponent.fromMap(Map m) {
     // TODO
   }

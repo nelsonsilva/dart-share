@@ -2,7 +2,7 @@
 
 #import("dart:html");
 
-#import("../client.dart", prefix:'share');
+#import("package:dart-share/client.dart", prefix:'share');
 
 class Connection extends share.Connection {
   WebSocket _ws;
@@ -15,7 +15,7 @@ class Connection extends share.Connection {
     
     _ws.on.close.add((_) => handleClose());
     
-    _ws.on.message.add((m) => handleMessage(m.data));
+    _ws.on.message.add((MessageEvent m) => handleMessage(m.data));
      
   }
   

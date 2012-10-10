@@ -1,6 +1,6 @@
 class TestText {
   static void run(){
-    var Text = OT["text"];
+    OTText Text = OT["text"];
     
     group('compress', (){  
       test('sanity checks', () {

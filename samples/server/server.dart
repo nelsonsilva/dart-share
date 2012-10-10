@@ -1,5 +1,5 @@
 #import('dart:io');
-#import('../../lib/server/server.dart', prefix:'share');
+#import('package:dart-share/server.dart', prefix:'share');
 
 send404(HttpResponse response) {
   response.statusCode = HttpStatus.NOT_FOUND;

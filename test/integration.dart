@@ -25,23 +25,24 @@ Pair<TextOperation, String> generateRandomOp(String docStr) {
 
   var pct = 0.9;
   var op = new TextOperation();
-
-  while(Math.random() < pct) {
+  var rnd = new Math.Random();
+  
+  while(rnd.nextDouble() < pct) {
 
     pct /= 2;
     
-    if (Math.random() > 0.5 || ( docStr.length == 0 ) ) {
+    if (rnd.nextDouble() > 0.5 || ( docStr.length == 0 ) ) {
       // Append an insert
-      var pos = (Math.random() * (docStr.length + 1)).floor().toInt();
+      var pos = rnd.nextInt((docStr.length + 1));
       var str = "${randomWord()} ";
       op.I(str, pos);
       docStr = "${docStr.substring(0, pos)}$str${docStr.substring(pos)}";
     } else {
       // Append a delete
-      var pos = (Math.random() * docStr.length).floor().toInt();
-      var length = Math.min((Math.random() * 4).floor().toInt(), docStr.length - pos);
+      var pos = rnd.nextInt(docStr.length);
+      var length = Math.min(rnd.nextInt(4), docStr.length - pos);
       op.D(docStr.substring(pos, pos + length), pos);
-      print("generated D('${docStr.substring(pos, pos + length)}',${pos}) on '$docStr'");
+      //print("generated D('${docStr.substring(pos, pos + length)}',${pos}) on '$docStr'");
       docStr = "${docStr.substring(0, pos)}${docStr.substring(pos + length)}";
     }
   }
@@ -153,12 +154,14 @@ class IntegrationTests {
           var testSome = null;
           
           testSome = () {
-            var ops = Math.min((Math.random() * 10).toInt() + 1, opsRemaining);
+            
+            var rnd = new Math.Random();
+            var ops = Math.min(rnd.nextInt(10) + 1, opsRemaining);
             inflight = ops;
             opsRemaining -= ops;
             
             for ( var k = 0; k < ops; k++) {
-              client.Doc doc = (Math.random() > 0.4) ? doc1 : doc2;
+              client.Doc doc = (rnd.nextDouble() > 0.4) ? doc1 : doc2;
               
               var res = generateRandomOp(doc.snapshot);
               var op = res.left;
