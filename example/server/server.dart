@@ -1,5 +1,5 @@
-#import('dart:io');
-#import('package:dart-share/server.dart', prefix:'share');
+import 'dart:io';
+import 'package:dart-share/server.dart' as share;
 
 send404(HttpResponse response) {
   response.statusCode = HttpStatus.NOT_FOUND;
@@ -8,12 +8,17 @@ send404(HttpResponse response) {
 
 startServer(String basePath) {
   HttpServer server = new HttpServer();
-  
+
   share.attach(server);
- 
+
   server.defaultRequestHandler = (HttpRequest request, HttpResponse response) {
     var path = request.path == '/' ? '/index.html' : request.path;
     var file = new File('${basePath}${path}');
+    if (!file.existsSync()) {
+      print("does not exist ${file.name}");
+      return;
+    }
+    
     file.fullPath().then((fullPath) {
       if (!fullPath.startsWith(basePath)) {
         send404(response);
@@ -28,7 +33,7 @@ startServer(String basePath) {
       }
     });
   };
-  
+
   server.listen('127.0.0.1', 8000);
 }
 
@@ -37,7 +42,7 @@ void main() {
   // script and then start the server.
   // File script = new File(new Options().script);
   // Directory d = script.directorySync();
-  
-  String d = "/home/nfgs/Programacao/Dart";
+
+  String d = "/Users/adam/dart/dart-share/example/server";
   startServer(d);
 }

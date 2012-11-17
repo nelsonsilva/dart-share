@@ -1,3 +1,5 @@
+part of server;
+
 /**
  *   # The cache is a map from docName -> {
   #   ops:[{op, meta}]
@@ -14,46 +16,46 @@
   # */
 class DocEntry {
   Doc doc;
-  
+
   // Cache of ops
   List<OpEntry> ops;
-  
+
   /** Timer before the document will be invalidated from the cache (if the document has no listeners) */
   var reapTimer;
-  
+
   /** Version of the snapshot thats in the database */
   int committedVersion;
   bool snapshotWriteLock = false;
-  
+
   var dbMeta;
-  
-  DocEntry([ this.doc,
-        this.ops,
-        this.reapTimer,
-        this.committedVersion,
-        this.snapshotWriteLock,
-        this.dbMeta]);
-  
-  get version() => doc.version;
+
+  DocEntry({this.doc: null,
+        this.ops: null,
+        this.reapTimer: null,
+        this.committedVersion: null,
+        this.snapshotWriteLock: null,
+        this.dbMeta: null});
+
+  get version => doc.version;
   set version(int v) => doc.version = v;
-  
-  get snapshot() => doc.snapshot;
+
+  get snapshot => doc.snapshot;
   set snapshot(var s) => doc.snapshot = s;
-  
-  get meta() => doc.meta;
-  get type() => doc.type;
-  get opQueue() => doc.opQueue;
-  
-  get on() => doc.on;
+
+  get meta => doc.meta;
+  get type => doc.type;
+  get opQueue => doc.opQueue;
+
+  get on => doc.on;
 }
 
 class OpEntry {
   Operation op;
   int version;
   var meta;
-  OpEntry([ this.op,
+  OpEntry({this.op,
              this.version,
-             this.meta ]);
+             this.meta });
 }
 
 /**
@@ -73,9 +75,9 @@ class OpEntry {
   # it should be pretty easy to do so without any external-to-the-model code changes. */
 class DocCache implements Map<String, DocEntry>{
   Map<String, DocEntry> _docs;
-  
+
   DocCache() : _docs = <DocEntry>{};
-  
+
   // Delegates
   bool containsValue(DocEntry value) => _docs.containsValue(value);
   bool containsKey(String key) => _docs.containsKey(key);
@@ -85,8 +87,10 @@ class DocCache implements Map<String, DocEntry>{
   DocEntry remove(String key)=> _docs.remove(key);
   void clear()=> _docs.clear();
   void forEach(void f(String key, DocEntry value)) => _docs.forEach(f);
-  Collection<String> getKeys() => _docs.getKeys();
-  Collection<DocEntry> getValues() => _docs.getValues();
-  int get length() => _docs.length;
-  bool isEmpty() => _docs.isEmpty();
+  Collection<String> getKeys() => _docs.keys;
+  Collection<DocEntry> getValues() => _docs.values;
+  Collection<String> get keys => _docs.keys;
+  Collection<DocEntry> get values => _docs.values;
+  int get length => _docs.length;
+  bool get isEmpty => _docs.isEmpty;
 }

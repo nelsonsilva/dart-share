@@ -1,4 +1,4 @@
-#library("share");
+library share;
 
-#import('server.dart');
-#import('client.dart');
+import 'server.dart';
+import 'client.dart';

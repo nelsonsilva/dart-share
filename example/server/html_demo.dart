@@ -1,9 +1,12 @@
-#import('dart:html');
-#import('dart:isolate');
+library html_demo;
 
-#import('package:dart-share/client.dart', prefix:'share');
-#import('package:dart-share/src/client/ws/connection.dart', prefix:'ws');
-#source('text_area.dart');
+import 'dart:html';
+import 'dart:isolate';
+import 'dart:math' as Math;
+
+import 'package:dart-share/client.dart' as share;
+import 'package:dart-share/src/client/ws/connection.dart' as ws;
+part 'text_area.dart';
 
 main(){
   TextAreaElement elem = document.query('#pad');

@@ -1,7 +1,9 @@
+part of client;
+
 class ConnectionEvents extends event.Events {
-  get disconnected() => this["disconnected"];
-  get disconnecting() => this["disconnecting"];
-  get connectFailed() => this["connectFailed"];
+  get disconnected => this["disconnected"];
+  get disconnecting => this["disconnecting"];
+  get connectFailed => this["connectFailed"];
 }
 
 class ConnectionEvent extends event.Event {
@@ -10,25 +12,25 @@ class ConnectionEvent extends event.Event {
 }
 
 /**
- * allows you to wait for a given message 
+ * allows you to wait for a given message
  * */
 class MessageHandler {
-  
+
   Connection conn;
   var replyHandler;
-  
+
   MessageHandler(this.conn);
-  
+
   Future<Message> waitFor(bool testFn(Message reply)) {
    var completer = new Completer<Message>();
-    
+
    completer.future.handleException((e) {
      print("Exception waiting for message : $e");
    });
-    
+
     replyHandler = (reply) {
       if (testFn(reply)) {
-        var idx = conn._messageHandlers.indexOf(replyHandler); 
+        var idx = conn._messageHandlers.indexOf(replyHandler);
         if (idx == -1) {
           throw new Exception("Was not waiting for ${reply.toJSON()}");
         }
@@ -38,9 +40,9 @@ class MessageHandler {
       }
       return false;
     };
-    
+
     conn._messageHandlers.add(replyHandler);
-    
+
     return completer.future;
   }
 }
@@ -54,28 +56,28 @@ abstract class Connection implements event.Emitter<ConnectionEvents>{
   String id; /** clientId */
   int numDocs = 0;
   String origin;
-  
+
   /** List of Future messages we're waiting for */
   List _messageHandlers;
-  
+
   ConnectionEvents on;
-  
-  Connection() 
+
+  Connection()
     :   on = new ConnectionEvents(),
-        _docs = <Doc>{}, 
+        _docs = <Doc>{},
         _messageHandlers = [];
-  
+
   Future<Connection> connect(String origin) {
     this.origin = origin;
-    
+
     _state = "connecting";
     isConnected = false;
-    
+
     // Setup auth handler
     waitFor((Message msg) => (msg.auth != null) || (msg.auth == null && (msg.error != null)))
     // Handle auth
     .then((Message msg) {
-      
+
       if (msg.auth == null && (msg.error != null)) {
         // Auth failed
         //_lastError = msg.error; // 'forbidden'
@@ -89,57 +91,57 @@ abstract class Connection implements event.Emitter<ConnectionEvents>{
         return;
       }
     });
-    
+
     var opening = new Completer();
     doConnect(opening);
     return opening.future;
   }
-  
+
   Future<Message> waitFor(bool testFn(Message reply)) => new MessageHandler(this).waitFor(testFn);
-  
+
   /** This will call @socket.onclose(), which in turn will emit the 'disconnected' event. */
-  abstract doDisconnect();
-  abstract doConnect(Completer<Connection> completer);
-  abstract doSend(String msg);
-  
+  doDisconnect();
+  doConnect(Completer<Connection> completer);
+  doSend(String msg);
+
   handleOpen(Completer<Connection> completer) {
     isConnected = true;
     completer.complete(this);
   }
-  
+
   handleClose() {
     on.disconnected.dispatch(new ConnectionEvent());
     isConnected = false;
   }
-  
+
   handleMessage(String str) {
 
     print("s->c($id) ${str}");
     var msg = new Message.fromJSON(str);
-    
+
     // Fill in the docName
     var docName = msg.doc;
-    
+
     if (docName != null) {
       _lastReceivedDoc = docName;
     } else {
       msg.doc = docName = _lastReceivedDoc;
     }
-    
-    /* check if we're expecting this message 
+
+    /* check if we're expecting this message
      * if so this message has already been handled */
     if (_messageHandlers.some((fn) => fn(msg))) {
       return;
     }
-    
+
     // All other messages go to the corresponding doc for handling
-    
+
     if (_docs.containsKey(docName)) {
       _docs[docName]._onMessage(msg);
     } else {
       print("Error: unhandled message $msg");
     }
-      
+
   }
 
   setState(state, [data]) {
@@ -147,38 +149,38 @@ abstract class Connection implements event.Emitter<ConnectionEvents>{
       return;
     }
     _state = state;
-     
+
     if (state == 'disconnected') {
       id = null;
     }
-    
+
     on[state].dispatch(new ConnectionEvent(data));
-    
+
     // Documents could just subscribe to the state change events, but there's less state to
     // clean up when you close a document if I just notify the doucments directly.
     _docs.forEach( (docName, doc) => doc._connectionStateChanged(state, data));
   }
-  
+
   /**
    * sends the [Message]
-   * @returns a MessageHandler instance that allows you to wait for a given message 
+   * @returns a MessageHandler instance that allows you to wait for a given message
    * */
   MessageHandler send(Message data) {
     String docName = data.doc;
-  
+
     if (docName == _lastSentDoc) {
       data.doc = null;
     } else {
       _lastSentDoc = docName;
     }
-    
+
     var str = data.toJSON();
     print('c($id)->s  $str');
     doSend(data.toJSON());
-    
+
     return new MessageHandler(this);
   }
-  
+
   /**
    *  Open a document. It will be created if it doesn't already exist.
    * Callback is passed a document or an error
@@ -203,9 +205,9 @@ abstract class Connection implements event.Emitter<ConnectionEvents>{
       //  callback 'Type mismatch', doc
       //return;
     }
-    
+
     var doc = new Doc(this, docName, create:true, type:type);
-    
+
     _docs[docName] = doc;
     var doOpen = doc.open();
     doOpen.handleException((_) => _docs.remove(docName) );
@@ -213,6 +215,6 @@ abstract class Connection implements event.Emitter<ConnectionEvents>{
   }
 
   disconnect() => doDisconnect();
-  
-  get isOk() => _state == "ok";
+
+  get isOk => _state == "ok";
 }

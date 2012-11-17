@@ -1,14 +1,16 @@
+part of ot;
+
 class OTText extends OTType<String, TextOperation>{
   OTText() : super("text");
-  
+
   String create() => "";
-    
+
   TextOperation createOp([List components]) {
     return Op(components.map((c) => new TextOperationComponent.fromMap(c)));
   }
-  
-  bool get hasInvert() => true;
-  
+
+  bool get hasInvert => true;
+
   TextOperation Op([List<TextOperationComponent> components = null]) {
     var op = new TextOperation();
     if(components != null){
@@ -16,10 +18,10 @@ class OTText extends OTType<String, TextOperation>{
     }
     return op;
   }
-  
+
   /** Injects s2 in s1 in the pos */
   static _strInject(String s1, num pos, String s2) => "${s1.substring(0, pos)}$s2${s1.substring(pos)}";
-  
+
   apply(String snapshot, TextOperation op) {
     op.forEach((component) {
       if (component.isInsert()) {
@@ -37,28 +39,30 @@ class OTText extends OTType<String, TextOperation>{
 }
 
 class TextOperation extends Operation<TextOperationComponent> implements InvertibleOperation<TextOperation>{
-  
+
   TextOperation();
-  
+
   // TODO - ugly....
   String get oTType => "text";
+
+  bool contains(TextOperationComponent) { throw new UnimplementedError(); }
   
   TextOperationComponent _I(String text, num pos) => new TextOperationComponent.insert(text, pos);
   TextOperationComponent _D(String text, num pos) => new TextOperationComponent.delete(text, pos);
-  
+
   // Operation builders
   TextOperation I(String text, num pos) {
     this.add(_I(text, pos));
     return this;
   }
-  
+
   TextOperation D(String text, num pos) {
     this.add(_D(text, pos));
     return this;
   }
-        
+
   TextOperation _newOp() => new TextOperation();
-  
+
   TextOperationComponent invertComponent(TextOperationComponent c) {
     if (c.isInsert()) {
       return _D(c.text, c.pos);
@@ -80,11 +84,11 @@ class TextOperation extends Operation<TextOperationComponent> implements Inverti
   // For simplicity, this version of append does not compress adjacent inserts and deletes of
   // the same text. It would be nice to change that at some stage.
   append(TextOperationComponent c) {
-    if(isEmpty()) {
+    if(isEmpty) {
       add(c);
-    } else {    
-      var lastC = last();
-      
+    } else {
+      var lastC = last;
+
       // Compose the insert into the previous insert if possible
       if( lastC.isInsert() && c.isInsert() && lastC.pos <= c.pos && c.pos <= (lastC.pos + lastC.text.length)) {
         this[length - 1] = _I(OTText._strInject(lastC.text, c.pos - lastC.pos, c.text), lastC.pos);
@@ -95,7 +99,7 @@ class TextOperation extends Operation<TextOperationComponent> implements Inverti
       }
     }
   }
-  
+
   // This helper method transforms a position by an op component.
   //
   // If c is an insert, insertAfter specifies whether the transform
@@ -119,11 +123,11 @@ class TextOperation extends Operation<TextOperationComponent> implements Inverti
       }
     }
   }
-  
+
   handleInsert(TextOperationComponent c, TextOperationComponent otherC, [bool insertAfter = false]) {
     append(_I(c.text, transformPosition(c.pos, otherC, insertAfter)));
   }
-  
+
   handleDeleteVsInsert(TextOperationComponent c, TextOperationComponent otherC) {
     var s = c.text;
     if(c.pos < otherC.pos) {
@@ -135,7 +139,7 @@ class TextOperation extends Operation<TextOperationComponent> implements Inverti
       append(_D(s, c.pos + otherC.text.length));
     }
   }
-  
+
   handleDeleteVsDelete(TextOperationComponent c, TextOperationComponent otherC) {
     if(c.pos >= otherC.pos + otherC.text.length) {
       append(_D(c.text, c.pos - otherC.text.length));
@@ -150,7 +154,7 @@ class TextOperation extends Operation<TextOperationComponent> implements Inverti
       if (c.pos + c.text.length > otherC.pos + otherC.text.length) {
         newC.text = "${newC.text}${c.text.substring(otherC.pos + otherC.text.length - c.pos)}";
       }
-      
+
       // This is entirely optional - just for a check that the deleted
       // text in the two ops matches
       var intersectStart = Math.max(c.pos, otherC.pos);
@@ -175,9 +179,9 @@ class TextOperation extends Operation<TextOperationComponent> implements Inverti
       handleDeleteVsDelete(c, otherC);
     }
   }
-  transformComponent(TextOperationComponent c, TextOperationComponent otherC, [bool left = false, bool right = false]) {
+  transformComponent(TextOperationComponent c, TextOperationComponent otherC, {bool left: false, bool right: false}) {
     if(c.isInsert()){
-      handleInsert(c, otherC, insertAfter: right);
+      handleInsert(c, otherC, right);
     } else { // Delete
       handleDelete(c, otherC);
     }
@@ -185,44 +189,44 @@ class TextOperation extends Operation<TextOperationComponent> implements Inverti
 }
 
 class TextOperationComponent extends OperationComponent {
-  
+
   static final int INSERT = 1;
   static final int DELETE = 2;
-  
+
   String text;
   num pos;
   int type;
-  
+
   TextOperationComponent._internal(this.type, this.text, this.pos) {
     if(pos<0) {
       throw new Exception('position cannot be negative');
     }
   }
-  
+
   TextOperationComponent.insert(String text, num pos) : this._internal(INSERT, text, pos);
   TextOperationComponent.delete(String text, num pos) : this._internal(DELETE, text, pos);
-  
+
   bool isInsert() => type == INSERT;
   bool isDelete() => type == DELETE;
-  
+
   factory TextOperationComponent.fromMap(Map m) {
     var pos = m["p"];
     var key = m.containsKey("i") ? "i" : "d";
     var type = (key == "i") ? INSERT : DELETE;
     return new TextOperationComponent._internal(type, m[key], pos);
   }
-  
+
   Map toMap() {
     var m = { "p": pos };
     var key = (isInsert())? "i" : "d";
     m[key] = text;
     return m;
   }
-  
+
   clone() {
     return new TextOperationComponent._internal(type, text, pos);
   }
-  
+
   bool operator ==(TextOperationComponent other) => other!=null && type == other.type && pos == other.pos && text == other.text;
 }
 
