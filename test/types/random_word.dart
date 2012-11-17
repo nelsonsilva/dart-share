@@ -1,3 +1,5 @@
+part of html_tests;
+
 var randomWord = null;
 
 int randomInt(num max) => new Math.Random().nextInt(max);
@@ -12,11 +14,11 @@ void readWordFile(String filename) {
 }
 
 loadRandomWords() {
-  if(randomWord == null) {  
+  if(randomWord == null) {
     File script = new File(new Options().script);
     script.directory().then((Directory d) {
-      readWordFile("${d.path}/types/jabberwocky.txt"); 
-    }); 
+      readWordFile("${d.path}/types/jabberwocky.txt");
+    });
   }
 }
 

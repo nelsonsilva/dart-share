@@ -1,3 +1,5 @@
+part of server;
+
 class Stats {
   writeOp([String where]){}
   cacheHit([String where]){}

@@ -1,20 +1,20 @@
-#library('tests');
+library tests;
 
-#import('package:unittest/unittest.dart');
+import 'package:unittest/unittest.dart';
 
-#import("dart:io");
-#import('dart:uri');
-#import('dart:math', prefix:'Math');
+import "dart:io";
+import 'dart:uri';
+import 'dart:math' as Math;
 
-#import('package:dart-share/client.dart', prefix:'client');
-#import('package:dart-share/server.dart', prefix:'share');
-#import('package:dart-share/src/shared/operation.dart');
+import 'package:dart-share/client.dart' as client;
+import 'package:dart-share/server.dart' as share;
+import 'package:dart-share/src/shared/operation.dart';
 
-#source('types/random_word.dart');
-#source('types/text.dart');
-#source('types/list.dart');
-#source('types/json.dart');
-#source('integration.dart');
+part 'types/random_word.dart';
+part 'types/text.dart';
+part 'types/list.dart';
+part 'types/json.dart';
+part 'integration.dart';
 
 void runTests() {
   TestText.run();

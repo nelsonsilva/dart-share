@@ -2,7 +2,6 @@ name: dart-share
 version: 0.0.1
 description: >
   A port of ShareJS to Dart.
-author:
-- Nelson Silva <nelson.silva@inevo.pt>
+author: "Nelson Silva <nelson.silva@inevo.pt>"
 dependencies:
   unittest: { sdk: unittest }

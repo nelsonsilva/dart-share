@@ -1,8 +1,10 @@
+part of server;
+
 class MessageMeta {
   String source;
   Date ts;
   String path = null;
-  MessageMeta([this.source, this.ts]);
+  MessageMeta({this.source: null, this.ts: null});
 }
 
 class Message {
@@ -14,15 +16,15 @@ class Message {
   String error = null;
   String auth = null;
   // TODO : Handle the generics
-  Dynamic snapshot = null;
-  Dynamic op = null; // This can be either an Operation or a List of components
+  dynamic snapshot = null;
+  dynamic op = null; // This can be either an Operation or a List of components
   MessageMeta meta = null;
-  
-  Message([this.doc, this.snapshot, this.open, this.type, this.version, this.create, this.error, this.auth, this.op, this.meta]);
-  
+
+  Message({this.doc: null, this.snapshot: null, this.open: null, this.type: null, this.version: null, this.create: null, this.error: null, this.auth: null, this.op: null, this.meta: null});
+
   factory Message.fromJSON(String str) {
     var msg = JSON.parse(str);
-    return new Message( 
+    return new Message(
       doc: msg["doc"],
       open: msg["open"],
       type: msg["type"],
@@ -33,18 +35,18 @@ class Message {
       auth: msg["auth"],
       op: msg["op"]);
   }
-  
+
   String toJSON() {
-    var m = {}; 
-    
+    var m = {};
+
     var put = (key, value, [defaultValue = null]) { if (value != null && value != defaultValue) { m[key] = value; } };
-    
+
     put("doc", doc);
     put("auth", auth);
     put("open", open);
     put("type", type);
     put("v",version);
-    put("create", create, defaultValue: false);
+    put("create", create, false);
     put("snapshot", snapshot);
     put("error", error);
     put("op", (op != null) ? op.map((c) => c.toMap()) : null );
