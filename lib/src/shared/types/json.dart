@@ -246,7 +246,7 @@ class JSONOperation extends Operation<JSONOperationComponent> implements Inverti
 
     // Convert an op component to a text op component
     convert(component) {
-      var pos = component.path.last();
+      var pos = component.path.last;
       if (component.isStringInsert()) {
         return Text.Op()._I(component.text, pos);
       } else {
@@ -274,73 +274,40 @@ class JSONOperation extends Operation<JSONOperationComponent> implements Inverti
 
     });
 
-    return;
+    return textOp;
   }
 
   _handleListMoveVsListMove(JSONOperationComponent c, JSONOperationComponent otherC, int common, {bool left: false, bool right: false}) {
-    int from = c.path[common],
-        to = c.index,
-        otherFrom = otherC.path[common],
-        otherTo = otherC.index;
 
-    if (otherFrom != otherTo) {
-      // if otherFrom == otherTo, we don't need to change our op.
+    var ListOT = OT["list"];
 
-      // where did my thing go?
-      if (from == otherFrom) {
-        // they moved it! tie break.
-        if (left) {
-          c.path[common] = otherTo;
-          if (from == to) { // # ugh
-            c.index = otherTo;
-          }
-        } else {
-          return;
-        }
-
-      } else {
-        // they moved around it
-        if (from > otherFrom) {
-          c.path[common]--;
-        }
-        if (from > otherTo) {
-          c.path[common]++;
-        } else if (from == otherTo) {
-          if (otherFrom > otherTo) {
-            c.path[common]++;
-            if (from == to) { // ugh, again
-              c.index++;
-            }
-          }
-        }
-
-        // step 2: where am i going to put it?
-        if (to > otherFrom) {
-          c.index--;
-        } else if (to == otherFrom) {
-          if (to > from) {
-            c.index--;
-          }
-        }
-        if (to > otherTo) {
-          c.index++;
-        } else if (to == otherTo) {
-          // if we're both moving in the same direction, tie break
-          if ( (otherTo > otherFrom && to > from) ||
-               (otherTo < otherFrom && to < from) ) {
-            if (right) {
-              c.index++;
-            }
-          } else {
-            if (to > from) {
-              c.index++;
-            } else if (to == otherFrom) {
-              c.index--;
-            }
-          }
-        }
+    // Convert an op component to a text op component
+    convert(component) {
+      var pos = component.path.last;
+      if (component.isListMove()) {
+        return ListOT.Op()._M(component.path[common], component.index);
       }
     }
+
+    var lc1 = convert(c);
+    var lc2 = convert(otherC);
+
+    ListOperation listOp = ListOT.Op();
+    listOp.transformComponent(lc1, lc2, left:left, right:right);
+
+    listOp.forEach((ListOperationComponent lc) {
+
+      var from = lc.from;
+      var path = c.path.getRange(0, common);
+      var to = lc.to;
+
+      if (lc.isMove()) {
+        LM(from, to, path);
+      }
+
+    });
+
+    return;
   }
 
   transformComponent(JSONOperationComponent c, JSONOperationComponent otherC, {bool left: false, bool right: false}) {
@@ -441,7 +408,7 @@ class JSONOperation extends Operation<JSONOperationComponent> implements Inverti
     } else if (otherC.isListMove()) {
       if (c.isListMove() && cplength == otherCplength) {
         // lm vs lm, here we go!
-        _handleListMoveVsListMove(c, otherC, common, left: left, right: right);
+        return _handleListMoveVsListMove(c, otherC, common, left: left, right: right);
 
       /* TODO - else if c.li != undefined and c.ld == undefined and commonOperand
           # li

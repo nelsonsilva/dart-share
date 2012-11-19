@@ -88,7 +88,40 @@ class TestJSON {
           JSON.transform(JSON.Op().SI('hi', 202, [0]), JSON.Op().LI(1, 'x'), left:true)
          ));
       });
-
+      
+      test('Ops on a moved element move with the element', () {
+        expect(
+            JSON.Op().LD(10, 'x')
+            , equals(
+                JSON.transform(JSON.Op().LD(4, 'x'), JSON.Op().LM(4, 10), left:true)
+            ));
+        
+        expect(
+            JSON.Op().SI('a', 1, [10])
+            , equals(
+                JSON.transform(JSON.Op().SI('a', 1, [4]), JSON.Op().LM(4, 10), left:true)
+            ));
+        
+        expect(
+            JSON.Op().LI(1, 'a', [10])
+            , equals(
+                JSON.transform(JSON.Op().LI(1, 'a', [4]), JSON.Op().LM(4, 10), left:true)
+            ));
+        
+        // TODO - other tests
+      });
+      
+      test('lm vs lm', () {
+        var res = JSON.transform(JSON.Op().LM(0, 2), JSON.Op().LM(2, 1), left:true);
+        expect(
+            JSON.Op().LM(0, 2)
+            , equals(
+                JSON.transform(JSON.Op().LM(0, 2), JSON.Op().LM(2, 1), left:true)
+            ));
+        // TODO - other tests
+      });
+        
+      
     });
 
   }
