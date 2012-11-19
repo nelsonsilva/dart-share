@@ -1,0 +1,92 @@
+<!DOCTYPE html> 
+<html> 
+  <head>
+    <title>Hex</title>
+    <style>
+      object {
+        position: absolute;
+        left: -9000px;
+        top: -9000px;
+      }
+      html {
+        font-family: Helvetica, arial, sans-serif;
+      }
+      h3 { font-family: monospace; }
+      h3:first-child { margin-top: 0 }
+      #board { margin: 2em; margin-bottom: 0.5em; }
+      #game {
+        position: absolute;
+        left: 400px;
+        width: 560px;
+      }
+      #rules {
+        margin-top: 0.5em;
+      }
+      #ot {
+        position: absolute;
+        width: 360px;
+        padding: 20px;
+        font-family: monospace;
+        word-wrap: break-word;
+      }
+      .op {
+        margin-bottom: 0.5em;
+      }
+      #chat {
+        position: absolute;
+        left: 960px;
+        padding: 20px;
+        font-family: monospace;
+        width: 300px;
+      }
+      #chat input {
+        font-size: inherit;
+        font-family: inherit;
+        width: 100%;
+        margin-top: 5px;
+      }
+      .message {
+        margin-top: 5px;
+      }
+      .message .user {
+        display: inline;
+        margin-right: 0.8em;
+        font-weight: bold;
+      }
+      .message .text {
+        display: inline;
+      }
+    </style>
+  </head>
+  <body>
+    <div id='ot'>
+      <h3>Document</h3>
+      <div id="doc">
+      </div>
+      <h3>Operations</h3>
+      <div id="ops">
+      </div>
+    </div>
+    <div id='game'>
+      <canvas id='board' width='600' height='420'></canvas>
+      <button id='reset' onclick='reset()'>Reset board</button>
+      <div id='rules'>
+        <h3>How to play</h3>
+        <ul>
+          <li>Pieces can't be placed next to pieces of a different color.</li>
+          <li>A hex is your territory if one of your pieces is next to it. If
+          there are two pieces of different colors next to a hex, it belongs to
+          neither player.</li>
+          <li>Try to win more territory than your opponent!</li>
+      </div>
+    </div>
+    <div id='chat'>
+      <h3>Chat</h3>
+      <div id='messages'></div>
+      <input id='message'>
+    </div>
+
+    <script type="application/dart" src="hex.dart"></script>
+    <script src="https://dart.googlecode.com/svn/branches/bleeding_edge/dart/client/dart.js"></script>
+  </body>
+</html>
