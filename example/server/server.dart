@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:dart-share/server.dart' as share;
+import 'package:share/server.dart' as share;
 
 send404(HttpResponse response) {
   response.statusCode = HttpStatus.NOT_FOUND;
@@ -20,17 +20,13 @@ startServer(String basePath) {
     }
     
     file.fullPath().then((fullPath) {
-      if (!fullPath.startsWith(basePath)) {
-        send404(response);
-      } else {
-        file.exists().then((found) {
-          if (found) {
-            file.openInputStream().pipe(response.outputStream);
-          } else {
-            send404(response);
-          }
-        });
-      }
+      file.exists().then((found) {
+        if (found) {
+          file.openInputStream().pipe(response.outputStream);
+        } else {
+          send404(response);
+        }
+      });
     });
   };
 
@@ -40,9 +36,8 @@ startServer(String basePath) {
 void main() {
   // Compute base path for the request based on the location of the
   // script and then start the server.
-  // File script = new File(new Options().script);
-  // Directory d = script.directorySync();
+  File script = new File(new Options().script);
+  String d = script.directorySync().path;
 
-  String d = "/Users/adam/dart/dart-share/example/server";
   startServer(d);
 }

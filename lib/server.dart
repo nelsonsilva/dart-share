@@ -8,11 +8,9 @@ import 'dart:math' as Math;
 // TODO - Use packages:...
 // #import('../../packages/DartRedisClient/RedisClient.dart');
 
-import 'src/shared/events.dart' as event;
+import 'package:share/share.dart';
+import 'package:share/events.dart' as event;
 
-import 'src/shared/operation.dart';
-
-part 'src/shared/message.dart';
 part 'src/server/doc.dart';
 part 'src/server/util/cache.dart';
 part 'src/server/util/stats.dart';

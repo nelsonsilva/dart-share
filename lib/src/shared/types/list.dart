@@ -1,4 +1,4 @@
-part of ot;
+part of share;
 
 class OTList extends OTType<List, ListOperation>{
   OTList() : super("list");
@@ -6,7 +6,7 @@ class OTList extends OTType<List, ListOperation>{
   List create() => [];
 
   ListOperation createOp([List components]) {
-    return Op(components.map((c) => new ListOperation.fromMap(c)));
+    return Op(components.map((c) => new ListOperationComponent.fromMap(c)));
   }
 
   bool get hasInvert => true;
@@ -44,7 +44,7 @@ class OTList extends OTType<List, ListOperation>{
         case ListOperationComponent.AT:
           // Delegate to the OP
           Operation dOp = c.obj as Operation;
-          list[c.index] = dOp.oTType.apply(list[c.index], (c.obj as Operation));
+          list[c.index] = OT[dOp.oTType].apply(list[c.index], (c.obj as Operation));
           break;
         default:
           throw new Exception("Invalid operation component");

@@ -32,7 +32,7 @@ class WSConnection extends Connection {
     var _lastSentDoc = null;
     var _lastReceivedDoc = null;
 
-    conn.onMessage = (String msg) {
+    conn.onMessage = (msg) {
       print("c->s $msg");
       on.message.dispatch( new ConnectionEvent(new Message.fromJSON(msg)) );
     };

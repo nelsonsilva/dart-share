@@ -28,12 +28,14 @@ class TextDoc implements event.Emitter<TextDocEvents> {
     });
   }
 
-  Future<Operation> insert(int pos, String text) {
+  // Future<Operation>
+  insert(int pos, String text) {
     var op = new TextOperation().I(text, pos);
     return doc.submitOp(op);
   }
 
-  Future<Operation> delete(int pos, int length) {
+  // Future<Operation>
+  delete(int pos, int length) {
     var op = new TextOperation().D(doc.snapshot.substring(pos, pos + length), pos);
     return doc.submitOp(op);
   }

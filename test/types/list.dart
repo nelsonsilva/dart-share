@@ -1,4 +1,4 @@
-part of html_tests;
+part of tests;
 
 class TestList {
   static void run(){

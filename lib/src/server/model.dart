@@ -73,11 +73,11 @@ class Model implements event.Emitter<ModelEvents> {
 
   ModelEvents on;
 
-  Model(this.db, [this.reapTime = 3000,
-                  this.numCachedOps = 10,
-                  this.forceReaping = false,
-                  this.opsBeforeCommit = 20,
-                  this.maximumAge = 40])
+  Model(this.db, {this.reapTime: 3000,
+                  this.numCachedOps: 10,
+                  this.forceReaping: false,
+                  this.opsBeforeCommit: 20,
+                  this.maximumAge: 40})
     : on = new ModelEvents(),
       docs = new DocCache(),
       awaitingGetSnapshot = {},
@@ -331,7 +331,7 @@ class Model implements event.Emitter<ModelEvents> {
       // The first check is because its possible that between refreshReapingTimeout being called and this
       // event being fired, someone called delete() on the document and hence the doc is something else now.
       if ( (docEntry == docs[docName]) &&
-           (docEntry.doc.on.op.isEmpty()) &&
+           (docEntry.doc.on.op.isEmpty) &&
            (!docEntry.opQueue.busy) ) {
 
         if (docEntry.reapTimer != null) {

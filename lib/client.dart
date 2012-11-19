@@ -1,19 +1,17 @@
 library client;
 
+//import 'dart:html';
 import 'dart:json';
 import 'dart:isolate';
 import 'dart:math' as Math;
-import 'dart:html';
 
-import 'src/shared/events.dart' as event;
-
-import 'src/shared/operation.dart';
-part "src/shared/types/text_doc.dart";
-part 'src/shared/message.dart';
+import 'package:share/share.dart';
+import 'package:share/events.dart' as event;
 
 part 'src/client/op_sink.dart';
-part 'src/client/doc.dart';
 part 'src/client/connection.dart';
+part 'src/client/doc.dart';
+part "src/client/text_doc.dart";
 
 class Client {
   Map<String, Connection> _connections;
@@ -26,6 +24,7 @@ class Client {
    * */
   Future<Connection> getConnection(String origin) {
     if (origin == null) {
+      // TODO - Do not import dart:html to allow using the client in the Dart VM
       origin = "${window.location.host}";
     }
     if (_connections.containsKey(origin)){

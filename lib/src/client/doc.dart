@@ -106,8 +106,9 @@ class Doc implements event.Emitter<DocEvents>{
     on[state].dispatch(data);
   }
 
-  /** Open a document. The document starts closed. **/
-  Future<Doc> open() {
+  /** Open a document. The document starts closed.
+   * returns Future<Doc> */
+  open() {
     _autoOpen = true;
     if(_state != 'closed') {
       return new Future.immediate(true);
@@ -155,8 +156,9 @@ class Doc implements event.Emitter<DocEvents>{
           });
   }
 
-  /** Close a document. */
-  Future<bool> close() {
+  /** Close a document.
+   *  returns Future<bool> */
+  close() {
     _autoOpen = false;
 
     if (_state == 'closed') {
@@ -233,8 +235,9 @@ class Doc implements event.Emitter<DocEvents>{
   }
 
   /** Submit an op to the server. The op maybe held for a little while before being sent, as only one
-   * op can be inflight at any time. */
-  Future<Operation> submitOp(op) {
+   * op can be inflight at any time.
+   * returns Future<Operation> */
+  submitOp(op) {
     if (op is NormalizableOperation) {
       op = op.normalize();
     }

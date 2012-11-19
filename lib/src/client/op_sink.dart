@@ -6,14 +6,14 @@ class OpSink {
   List _inflightSubmittedIds;
 
   Operation _inflightOp = null;
-  List<Completer<Operation>> _inflightCallbacks;
+  var _inflightCallbacks; // List<Completer<Operation>>
 
   /** All ops that are waiting for the server to acknowledge inflightOp */
   Operation _pendingOp = null;
-  List<Completer<Operation>> _pendingCallbacks;
+  var _pendingCallbacks; // List<Completer<Operation>>
 
-  Doc doc;
-  Connection connection;
+  var doc;//Doc doc;
+  var connection; //Connection connection;
 
   OpSink(this.connection, this.doc)
       :   _inflightCallbacks = [],
@@ -37,7 +37,8 @@ class OpSink {
       });
   }
 
-  Future<Operation> add(Operation op) {
+  // Future<Operation>
+  add(Operation op) {
     if (_pendingOp != null) {
       _pendingOp = doc.type.compose(_pendingOp, op);
     } else {
@@ -56,6 +57,7 @@ class OpSink {
   }
 
   get hasInFlightOp => _inflightOp != null;
+
 
   /** Send ops to the server, if appropriate.
    *
@@ -153,19 +155,21 @@ class OpSink {
     return docOp;
   }
 
+
   /** Transform a server op by a client op, and vice versa. **/
-  Pair<Operation, Operation> _xf(Operation client, Operation server) => client.transform(server);
+  // Pair<Operation, Operation>
+  _xf(Operation client, Operation server) => client.transform(server);
 
   /** Resend any previously queued operation.
    * return a bool indicating if this is a reconnect */
   _handleReconnect() {
-    var response = {
-      "doc": doc.name,
-      "op": _inflightOp,
-      "v": doc.version
-    };
+    var response = new Message(
+      doc: doc.name,
+      op: _inflightOp,
+      version: doc.version
+    );
     if (!_inflightSubmittedIds.isEmpty) {
-      response["dupIfSource"] = _inflightSubmittedIds;
+      // response.dupIfSource = _inflightSubmittedIds;
     }
     connection.send(response);
 

@@ -2,7 +2,7 @@ library WSConnection;
 
 import "dart:html";
 
-import "package:dart-share/client.dart" as share;
+import "package:share/client.dart" as share;
 
 class Connection extends share.Connection {
   WebSocket _ws;

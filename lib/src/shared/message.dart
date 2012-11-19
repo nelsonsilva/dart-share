@@ -1,4 +1,4 @@
-part of server;
+part of share;
 
 class MessageMeta {
   String source;
@@ -22,7 +22,7 @@ class Message {
 
   Message({this.doc: null, this.snapshot: null, this.open: null, this.type: null, this.version: null, this.create: null, this.error: null, this.auth: null, this.op: null, this.meta: null});
 
-  factory Message.fromJSON(String str) {
+  factory Message.fromJSON(str) {
     var msg = JSON.parse(str);
     return new Message(
       doc: msg["doc"],
@@ -38,7 +38,6 @@ class Message {
 
   String toJSON() {
     var m = {};
-
     var put = (key, value, [defaultValue = null]) { if (value != null && value != defaultValue) { m[key] = value; } };
 
     put("doc", doc);

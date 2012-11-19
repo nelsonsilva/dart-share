@@ -87,8 +87,8 @@ class DocCache implements Map<String, DocEntry>{
   DocEntry remove(String key)=> _docs.remove(key);
   void clear()=> _docs.clear();
   void forEach(void f(String key, DocEntry value)) => _docs.forEach(f);
-  Collection<String> getKeys() => _docs.keys;
-  Collection<DocEntry> getValues() => _docs.values;
+  Collection<String> get getKeys => _docs.keys;
+  Collection<DocEntry> get getValues => _docs.values;
   Collection<String> get keys => _docs.keys;
   Collection<DocEntry> get values => _docs.values;
   int get length => _docs.length;

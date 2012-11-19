@@ -1,4 +1,4 @@
-name: dart-share
+name: share
 version: 0.0.1
 description: >
   A port of ShareJS to Dart.

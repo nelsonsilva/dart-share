@@ -1,13 +1,4 @@
-library ot;
-
-import "dart:math" as Math;
-part "types/text.dart";
-part "types/list.dart";
-part "types/json.dart";
-
-var OT = {"text": new OTText(),
-          "list": new OTList(),
-          "json": new OTJSON()};
+part of share;
 
 abstract class OTType<S, O extends Operation> {
 
@@ -19,7 +10,7 @@ abstract class OTType<S, O extends Operation> {
   O createOp([List components]);
 
   /** Transforms rightOp by this Op. Returns ['rightOp', clientOp'] **/
-  O transform(O leftOp, O rightOp, [bool left = false, bool right = false]) {
+  O transform(O leftOp, O rightOp, {bool left: false, bool right: false}) {
     if (!left && !right){
       throw new Exception("type must be 'left' or 'right'");
     }
@@ -176,6 +167,7 @@ abstract class Operation<C extends OperationComponent> implements Collection<C> 
   bool every(bool f(C c)) => _ops.every(f);
   bool some(bool f(C c)) => _ops.some(f);
   int get length => _ops.length;
+  bool contains(C c) => _ops.contains(c);
 
   // delegates for List
   void add(C c) => _ops.add(c);

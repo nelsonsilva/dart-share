@@ -1,4 +1,4 @@
-part of ot;
+part of share;
 
 class OTText extends OTType<String, TextOperation>{
   OTText() : super("text");
@@ -46,7 +46,7 @@ class TextOperation extends Operation<TextOperationComponent> implements Inverti
   String get oTType => "text";
 
   bool contains(TextOperationComponent) { throw new UnimplementedError(); }
-  
+
   TextOperationComponent _I(String text, num pos) => new TextOperationComponent.insert(text, pos);
   TextOperationComponent _D(String text, num pos) => new TextOperationComponent.delete(text, pos);
 

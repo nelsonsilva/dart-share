@@ -1,4 +1,4 @@
-part of ot;
+part of share;
 
 class OTJSON extends OTType<Object, JSONOperation>{
   OTJSON() : super("json");
@@ -6,7 +6,7 @@ class OTJSON extends OTType<Object, JSONOperation>{
   Object create() => new Object();
 
   JSONOperation createOp([List components]) {
-    return Op(components.map((c) => new JSONOperation.fromMap(c)));
+    return Op(components.map((c) => new JSONOperationComponent.fromMap(c)));
   }
 
   bool get hasInvert => true;
@@ -137,7 +137,7 @@ class JSONOperation extends Operation<JSONOperationComponent> implements Inverti
   JSONOperationComponent _LM(int index1, int index2, List path) => new JSONOperationComponent.listMove(index1, index2, path);
 
   bool contains(TextOperationComponent) { throw new UnimplementedError(); }
-  
+
   // Operation builders
   JSONOperation SI(String text, int offset, [List path]) {
     this.add(_SI(text, offset, (path==null)?[]:path ));
@@ -367,7 +367,7 @@ class JSONOperation extends Operation<JSONOperationComponent> implements Inverti
         oc.path = oc.path.getRange(cplength, oc.path.length - cplength); // [cplength..]
         var op = _newOp();
         op.add(oc);
-        c.data = apply(c.data.clone, op);
+        c.data = OT["json"].apply(c.data.clone, op);
       }
     }
 

@@ -39,7 +39,7 @@ class UserAgent {
   /** Should be manually set by the auth function. */
   String _name;
 
-  UserAgent(this.model, [auth = null])
+  UserAgent(this.model, {auth: null})
     : _auth = auth,
       _listeners = {},
       _name = null {

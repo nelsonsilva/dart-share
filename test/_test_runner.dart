@@ -6,9 +6,9 @@ import "dart:io";
 import 'dart:uri';
 import 'dart:math' as Math;
 
-import 'package:dart-share/client.dart' as client;
-import 'package:dart-share/server.dart' as share;
-import 'package:dart-share/src/shared/operation.dart';
+import 'package:share/share.dart';
+import 'package:share/client.dart' as client;
+import 'package:share/server.dart' as share;
 
 part 'types/random_word.dart';
 part 'types/text.dart';
