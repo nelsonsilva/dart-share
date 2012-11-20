@@ -6,7 +6,7 @@ int randomInt(num max) => new Math.Random().nextInt(max);
 
 void readWordFile(String filename) {
   var file = new File(filename);
-  file.readAsText(Encoding.ASCII)
+  file.readAsString(Encoding.ASCII)
   .transform((String text) => text.split(new RegExp(r"\W+")))
   .then((words) {
     randomWord = () => words[randomInt(words.length)];
