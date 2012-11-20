@@ -12,7 +12,9 @@ main(){
   TextAreaElement elem = document.query('#pad');
   var client = new share.Client(new ws.Connection());
 
-  var connection = client.open('blag', 'text', 'localhost:8000').then((doc) {
+  // TODO - I need to import dart:html in the client but this will prevent running the integration
+  // tests in the console. So for now I'm explicity setting window.location.host as the origin
+  var connection = client.open('blag', 'text', window.location.host).then((doc) {
     elem.disabled = false;
     new SharedTextArea(doc, elem);
   });

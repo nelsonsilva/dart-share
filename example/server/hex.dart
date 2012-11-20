@@ -454,7 +454,7 @@ main(){
 
       var client = new share.Client(new ws.Connection());
 
-      var connection = client.open(docname, 'json', 'localhost:8000').then((doc) {
+      var connection = client.open(docname, 'json', window.location.host).then((doc) {
         $state = doc;
         doc.on.change.add((opEvt) => stateUpdated(opEvt.op));
         if (doc.created) {
