@@ -1,12 +1,25 @@
 library hex_demo;
 
 import 'dart:html';
-import 'dart:isolate';
+import 'dart:json';
 import 'dart:math' as Math;
 
+import 'package:share/share.dart';
 import 'package:share/client.dart' as share;
 import 'package:share/src/client/ws/connection.dart' as ws;
 
+var JSON = OT["json"];
+
+var $state;
+
+const defaultSide = 20, 
+      spacing = 5;
+
+var selectedX = null,
+    selectedY = null,
+    grid = {"width": 10, "height": 10},
+    playerTurn = 1,
+    playerColors = [[200,0,0], [0,0,200]];
 randomDocName([length = 10]) {
   const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-=";
   var name = [];
@@ -18,9 +31,9 @@ randomDocName([length = 10]) {
 }
 
       // from http://www.quirksmode.org/js/cookies.html
-createCookie(name,value,days) {
+createCookie(name,value,[days]) {
   var expires = "";
-  if (days) {
+  if (?days) {
     var date = new Date.now();
     date.add(new Duration(days: days));
     var expires = "; expires=${date.toString()}";
@@ -41,19 +54,11 @@ readCookie(name) {
 
 eraseCookie(name) => createCookie(name,"",-1);
 
-var defaultSide = 20, 
-    spacing = 5,
-    selectedX = null,
-    selectedY = null,
-    grid = {"width": 10, "height": 10},
-    playerTurn = 1,
-    playerColors = [[200,0,0], [0,0,200]];
-
-gridAt(g,x,y) => g.values[y*g.width+x];
+gridAt(g,x,y) => g["values"][(y*g["width"]+x).toInt()];
 
 colorStyle(color) => 'rgb(${color[0]},${color[1]},${color[2]})';
 
-fillHex(ctx, x, y, color, side) {
+fillHex(ctx, x, y, color, [side = defaultSide]) {
   ctx.fillStyle = color;
   x += 0.5;
   y += 0.5;
@@ -61,7 +66,7 @@ fillHex(ctx, x, y, color, side) {
   ctx.fill();
 }
 
-strokeHex(ctx, x, y, color, side) {
+strokeHex(ctx, x, y, color, [side = defaultSide]) {
   ctx.strokeStyle = color;
   x += 0.5;
   y += 0.5;
@@ -69,8 +74,7 @@ strokeHex(ctx, x, y, color, side) {
   ctx.stroke();
 }
 
-pathHex(ctx, x, y, color, side) {
-  if (!side) side = defaultSide;
+pathHex(ctx, x, y, color, [side = defaultSide]) {
   ctx.beginPath();
   ctx.moveTo(x, y);
   ctx.lineTo(x+side, y);
@@ -82,21 +86,14 @@ pathHex(ctx, x, y, color, side) {
   ctx.lineTo(x, y);
 }
 
-hexEdgeWidth(side) {
-  //  _
-  // / \
-  // \_/
-  //   v ~~~~ this width
+//  _
+// / \
+// \_/
+//   v ~~~~ this width
+hexEdgeWidth([side = defaultSide]) => side*Math.cos(Math.PI/3);
 
-  if (!side) side = defaultSide;
-  return side*Math.cos(Math.PI/3);
-}
-
-hexHeight(side) {
-  // height of one hex of side length +side+
-  if (!side) side = defaultSide;
-  return 2*side*Math.sin(Math.PI/3);
-}
+// height of one hex of side length +side+
+hexHeight([side = defaultSide]) => 2*side*Math.sin(Math.PI/3);
 
 adjacencies(x, y) {
   // odd and even columns have different adjacencies
@@ -114,22 +111,13 @@ all(f, xs) {
   return true;
 }
 
-any(f, xs) {
-  for (var i = 0; i < xs.length; i++) {
-    if (f(xs[i])) {
-      return true;
-    }
-  }
-  return false;
-}
-
 okToPlace(gr, player, x, y) {
-  if (x < 0 || x >= gr.width || y < 0 || y >= gr.height) return false;
+  if (x < 0 || x >= gr["width"] || y < 0 || y >= gr["height"]) return false;
   if (gridAt(gr, x,y) != 0) return false;
   // a move adjacent to (x,y) would be OK
   var adjMoveOK = (xy) {
     var x = xy[0], y = xy[1];
-    if (x < 0 || x >= gr.width || y < 0 || y >= gr.width) {
+    if (x < 0 || x >= gr["width"] || y < 0 || y >= gr["width"]) {
       return true;
     }
     var val = gridAt(gr, x,y);
@@ -139,8 +127,8 @@ okToPlace(gr, player, x, y) {
 }
 
 drawGrid(ctx, gr) {
-  for (var y = 0; y < gr.height; y++) {
-    for (var x = 0; x < gr.width; x++) {
+  for (var y = 0; y < gr["height"]; y++) {
+    for (var x = 0; x < gr["width"]; x++) {
       var hexX = hexEdgeWidth() + (defaultSide+hexEdgeWidth() +
           spacing*Math.cos(Math.PI/6))*x;
       var hexY = (hexHeight() + spacing)*y +
@@ -203,20 +191,20 @@ hexForPixel(x,y) {
       yoff >= yForX(t_m, t_b, xoff) &&
       yoff <= yForX(b_m, b_b, xoff))
   ) {
-    return {x:xcell, y:ycell};
+    return {"x": xcell, "y": ycell};
   }
   if (yoff <= hexHeight()/2 && yoff <= yForX(t_m, hexHeight()/2, xoff)) {
-    return {x:xcell-1, y:ycell + (odd ? 0 : -1)};
+    return {"x": xcell-1, "y": ycell + (odd ? 0 : -1)};
   }
   if (yoff >= hexHeight()/2 + spacing &&
       yoff >= yForX(b_m, spacing + hexHeight() / 2, xoff)) {
-    return {x:xcell-1, y:ycell + (odd ? 1 : 0)};
+    return {"x": xcell-1, "y": ycell + (odd ? 1 : 0)};
   }
 }
 
 isComplete(gr) {
-  for (var y = 0; y < gr.height; y++) {
-    for (var x = 0; x < gr.width; x++) {
+  for (var y = 0; y < gr["height"]; y++) {
+    for (var x = 0; x < gr["width"]; x++) {
       var ok1 = okToPlace(gr, 1, x, y),
           ok2 = okToPlace(gr, 2, x, y);
       if (ok1 && ok2) {
@@ -225,15 +213,13 @@ isComplete(gr) {
       } else if (ok1 && !ok2) {
         // player 1 can place. if player 2 can place at any point
         // adjacent to this one, the board is not complete.
-        if (any(function (xy) { return okToPlace(gr, 2, xy[0], xy[1]); },
-            adjacencies(x,y))) {
+        if (adjacencies(x,y).some( (xy) => okToPlace(gr, 2, xy[0], xy[1]))){
           return false;
         }
       } else if (!ok1 && ok2) {
         // player 2 can place. if player 1 can place at any point
         // adjacent to this one, the board is not complete.
-        if (any(function (xy) { return okToPlace(gr, 1, xy[0], xy[1]); },
-            adjacencies(x,y))) {
+        if (adjacencies(x,y).some( (xy) => okToPlace(gr, 1, xy[0], xy[1]) ) ) {
           return false;
         }
       } else if (!ok1 && !ok2) {
@@ -254,8 +240,8 @@ controller(gr, x, y) {
 
 territory(gr, player) {
   var num = 0;
-  for (var y = 0; y < gr.height; y++) {
-    for (var x = 0; x < gr.width; x++) {
+  for (var y = 0; y < gr["height"]; y++) {
+    for (var x = 0; x < gr["width"]; x++) {
       if (controller(gr, x, y) == player) {
         num++;
       }
@@ -264,31 +250,16 @@ territory(gr, player) {
   return num;
 }
 
-mousePos(ev) {
-  var posx = 0;
-  var posy = 0;
-  if (!e) var e = window.event;
-  if (e.pageX || e.pageY)   {
-    posx = e.pageX;
-    posy = e.pageY;
-  } else if (e.clientX || e.clientY)  {
-    posx = e.clientX + document.body.scrollLeft
-        + document.documentElement.scrollLeft;
-    posy = e.clientY + document.body.scrollTop
-        + document.documentElement.scrollTop;
-  }
-  return {x:posx,y:posy}
-}
-
 boardMouseMoved(e) {
-  var board = $('#board').offset();
-  var pos = mousePos(e);
-  var x = pos.x - board.left, y = pos.y - board.top;
+  var board = query('#board').getBoundingClientRect();
+
+  var x = e.pageX - board.left, 
+      y = e.pageY - board.top;
 
   var hex = hexForPixel(x,y);
-  if (hex) {
-    selectedX = hex.x;
-    selectedY = hex.y;
+  if (hex != null) {
+    selectedX = hex["x"];
+    selectedY = hex["y"];
   } else {
     selectedX = null;
     selectedY = null;
@@ -297,42 +268,43 @@ boardMouseMoved(e) {
 }
 
 boardMouseClicked(e) {
-  var board = $('#board').offset();
-  var pos = mousePos(e);
-  var x = pos.x - board.left, y = pos.y - board.top;
+  var board = query('#board').getBoundingClientRect();
+
+  var x = e.pageX - board.left, 
+      y = e.pageY - board.top;
   var hex = hexForPixel(x,y);
-  if (hex && hex.x >= 0 && hex.x < grid.width &&
-      hex.y >= 0 && hex.y < grid.height &&
-      okToPlace(grid, playerTurn, hex.x, hex.y)) {
-    //grid.values[hex.y*grid.width+hex.x] = playerTurn;
-    $state.submitOp([{
-      p:['grid','values',hex.y*grid.width+hex.x],
-      ld:0,li:playerTurn
-    },{
-      p:['playerTurn'],
-      od:playerTurn,
-      oi:playerTurn == 1 ? 2 : 1
-    }]);
+  if (hex != null && hex["x"] >= 0 && hex["x"] < grid["width"] &&
+      hex["y"] >= 0 && hex["y"] < grid["height"] &&
+      okToPlace(grid, playerTurn, hex["x"], hex["y"])) {
+    //grid.values[hex.y*grid["width"]+hex.x] = playerTurn;
+    
+    // LR(String key, dynamic before, dynamic after, [List path])
+    // OR(String key, dynamic before, dynamic after, [List path])
+    var op = JSON.Op()
+        .LR((hex["y"]*grid["width"]+hex["x"]).toInt(), 0, playerTurn, ['grid', 'values'])
+        .OR('playerTurn', playerTurn, playerTurn == 1 ? 2 : 1);
+    
+    $state.submitOp(op);
   }
 }
 
 redraw() {
-  var board = document.getElementById('board');
-  var ctx = board.getContext('2d');
-  ctx.clearRect(0,0,board.width, board.height);
+  var board = query('#board');
+  var ctx = board.context2d;
+  ctx.clearRect(0, 0, board.clientWidth, board.clientHeight);
   drawGrid(ctx, grid);
 
   ctx.font = '30px sans-serif';
   ctx.textBaseline = 'top';
   ctx.fillStyle = colorStyle(playerColors[playerTurn-1]);
-  ctx.fillText('Player ' + playerTurn, 400,100);
+  ctx.fillText('Player $playerTurn', 400,100);
 
   ctx.font = '20px sans-serif';
   ctx.fillStyle = colorStyle(playerColors[0]);
-  ctx.fillText('P1: ' + territory(grid, 1), 400,140);
+  ctx.fillText('P1: ${territory(grid, 1)}', 400,140);
 
   ctx.fillStyle = colorStyle(playerColors[1]);
-  ctx.fillText('P2: ' + territory(grid, 2), 400,165);
+  ctx.fillText('P2: ${territory(grid, 2)}', 400,165);
 
   if (isComplete(grid)) {
     ctx.fillStyle = '#000';
@@ -341,27 +313,26 @@ redraw() {
 }
 
 clear() {
-  grid.values = [];
-  for (var y = 0; y < grid.height; y++) {
-    for (var x = 0; x < grid.width; x++) {
-      grid.values[y*grid.width+x] = 0;
-    }
-  }
+  var size = grid["width"] * grid["height"];
+  grid["values"] = [];
+  while(--size >= 0) grid["values"].add(0);
 }
 
 reset() {
   clear();
   playerTurn = 1;
-  $state.submitOp([
-                   {p:['grid','values'],od:$state.snapshot.grid.values,oi:grid.values},
-                   {p:['playerTurn'],od:$state.snapshot.playerTurn,oi:playerTurn}
-                   ]);
+  // OR(String key, dynamic before, dynamic after, [List path])
+  var op = JSON.Op()
+      .OR('values', $state.snapshot["grid"]["values"], grid["values"], ['grid'])
+      .OR('playerTurn', $state.snapshot["playerTurn"], playerTurn);
+
+  $state.submitOp(op);
 }
 
 begin() {
-  var board = document.getElementById('board');
-  board.onmousemove = boardMouseMoved;
-  board.onclick = boardMouseClicked;
+  var board = query('#board');
+  board.on.mouseMove.add(boardMouseMoved);
+  board.on.click.add(boardMouseClicked);
   redraw();
 }
 
@@ -387,7 +358,7 @@ hslToRgb(h, s, l){
     b = hue2rgb(p, q, h - 1/3);
   }
 
-  return '#' + Math.round(r * 255).toString(16) + Math.round(g * 255).toString(16) + Math.round(b * 255).toString(16);
+  return '#${(r * 255).round().toStringAsFixed(16)}${(g * 255).round().toStringAsFixed(16)}${(b * 255).round().toStringAsFixed(16)}';
 }
 
 colorForName(name) {
@@ -405,91 +376,91 @@ colorForName(name) {
 }
 
 addChatMessage(m) {
-  var msg = $('<div class="message"><div class="user"></div><div class="text"></div></div>');
-  $('.text', msg).text(m.message);
-  $('.user', msg).text(m.from);
-  $('.user', msg).css('color',colorForName(m.from));
-  $('#chat #messages').append(msg);
-  var allMsgs = $('.message')
-      if (allMsgs.length > 15) {
-        allMsgs.slice(0, Math.max(0,allMsgs.length - 15)).each(function () {
-          var e = $(this);
-          e.fadeOut('slow', function () {
-            e.remove();
-          });
-        });
-      }
+  var msg = new Element.html('<div class="message"><div class="user"></div><div class="text"></div></div>')
+  ..query('.text').text = m["message"]
+  ..query('.user').text = m["from"]
+  ..query('.user')..style.color = colorForName(m["from"]);
+
+  query('#chat #messages').elements.add(msg);
+  var allMsgs = queryAll('.message');
+  if (allMsgs.length > 15) {
+    allMsgs.getRange(0, Math.max(0,allMsgs.length - 15)).forEach( (e) {
+      e.remove();
+    });
+  }
 }
 
-stateUpdated(op) {
-  if (op) {
-    var ops = $('#ops');
-    var opel = $('<div class="op" style="display:none">');
-    opel.text(JSON.stringify(op));
-    ops.prepend(opel);
-    opel.fadeIn('fast')
-    var allOps = $('.op');
+stateUpdated([op]) {
+  if (?op) {
+    var ops = query('#ops');
+    var opel = new Element.html('<div class="op">');
+    opel.text = Strings.join(op.map((c) => c.toMap().toString()), " , ");
+    ops.elements.add(opel);
+    //opel.fadeIn('fast')
+    var allOps = queryAll('.op');
     if (allOps.length > 10) {
-      allOps.slice(0, Math.max(0,allOps.length - 10)).each(function () {
-        var e = $(this);
-        e.fadeOut('fast', function () {
-          e.remove();
-        });
+      allOps.getRange(0, Math.max(0,allOps.length - 10)).forEach((e) {
+        e.remove();
       });
     }
-    op.forEach(function (c) {
-      if (c.p[0] == 'chat' && c.li) {
-        addChatMessage(c.li)
+    op.forEach((c) {
+      if (!c.path.isEmpty && c.path[0] == 'chat' && c.isListInsert()) {
+        addChatMessage(c.data);
       }
-    })
+    });
   } else {
     // first run
-    $state.snapshot.chat.slice(0, 10).reverse().forEach(addChatMessage)
+    var msgs = $state.snapshot["chat"];
+   msgs = msgs.getRange(0, Math.min(10, msgs.length));
+    var i = msgs.length;
+    while(--i >= 0) { addChatMessage(msgs[i]); }
   }
-  $('#doc').text(JSON.stringify($state.snapshot))
-  grid = $state.snapshot.grid
-  playerTurn = $state.snapshot.playerTurn;
+  query('#doc').text = $state.snapshot.toString();
+  grid = $state.snapshot["grid"];
+  playerTurn = $state.snapshot["playerTurn"];
   redraw();
 }
 
 main(){
-      var username;
-      if (!(username = readCookie('username'))) {
+      var username = readCookie('username');
+      if (username == null) {
         username = randomDocName(4);
         createCookie('username', username, 5);
       }
 
-      query('#message').on.keyDown.add( (e) {
+      query('#reset').on.click.add((_) => reset());
+      
+      query('#message').on.keyDown.add( (KeyboardEvent e) {
         if ((e.keyCode == 13) || (e.which == 13)) {
-          if ((e.srcElement as InputElement).value == null) return;
+          if ((e.target as InputElement).value == null) return;
           // enter was pressed
-          $state.submitOp({
-            p: ['chat',0],
-            li: {
-              from: username,
-              message: e.srcElement.value
-            }
-          });
-          (e.srcElement as InputElement).value = '';
+          // LI(int index, dynamic obj, [List path])
+          var op = JSON.Op().LI(0, {
+            "from": username,
+            "message": (e.target as InputElement).value
+          }, ["chat"]);
+          $state.submitOp(op);
+          (e.target as InputElement).value = '';
         }
       });
 
       
 
-      var $state;
-      if (!document.location.hash) {
-        document.location.hash = '#' + randomDocName();
+      if (window.location.hash == null || window.location.hash.isEmpty) {
+        window.location.hash = '#${randomDocName()}';
       }
-      var docname = 'hex:' + document.location.hash.slice(1)
+
+      var docname = 'hex:${window.location.hash.substring(1)}';
 
       var client = new share.Client(new ws.Connection());
 
       var connection = client.open(docname, 'json', 'localhost:8000').then((doc) {
         $state = doc;
-        doc.on.change.add(stateUpdated);
+        doc.on.change.add((opEvt) => stateUpdated(opEvt.op));
         if (doc.created) {
-          clear()
-          doc.submitOp([{p:[],od:null,oi:{grid:grid,playerTurn:1,chat:[]}}])
+          clear();
+          var op = JSON.Op().OI(null, {"grid": grid, "playerTurn":1, "chat":[]});
+          doc.submitOp(op);
         } else {
           stateUpdated();
         }
