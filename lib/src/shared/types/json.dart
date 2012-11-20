@@ -1,9 +1,9 @@
 part of share;
 
-class OTJSON extends OTType<Object, JSONOperation>{
+class OTJSON extends OTType<Map, JSONOperation>{
   OTJSON() : super("json");
 
-  Object create() => new Object();
+  Map create() => new Map();
 
   JSONOperation createOp([List components]) {
     return Op(components.map((c) => new JSONOperationComponent.fromMap(c)));
@@ -23,7 +23,7 @@ class OTJSON extends OTType<Object, JSONOperation>{
   _checkIsObject(e) { if ( e is! Object ) { throw new Exception("Referenced element not an Object (it was ${JSON.stringify(e)})"); } }
   _checkIsList(e) { if ( e is! List ) { throw new Exception("Referenced element not a List (it was ${JSON.stringify(e)})"); } }
 
-  apply(Object snapshot, JSONOperation op) {
+  apply(snapshot, JSONOperation op) {
 
     var container = {"data": snapshot }; // TODO - clone the snapshot
 
@@ -512,13 +512,13 @@ class JSONOperationComponent extends OperationComponent {
 
   factory JSONOperationComponent.objectInsert(String key, dynamic obj, List path) {
     path = new List.from(path);
-    path.add(key);
+    if (key != null) path.add(key);
     return new JSONOperationComponent._internal( OBJECT_INSERT, path, obj);
   }
 
   factory JSONOperationComponent.objectDelete(String key, dynamic obj, List path) {
     path = new List.from(path);
-    path.add(key);
+    if (key != null) path.add(key);
     return new JSONOperationComponent._internal( OBJECT_DELETE, path, obj);
   }
 
@@ -555,10 +555,20 @@ class JSONOperationComponent extends OperationComponent {
 
   factory JSONOperationComponent.fromMap(Map m) {
     //var path = m["p"];
-    var pos = m["p"];
-    var key = m.containsKey("i") ? "i" : "d";
-    var type = (key == "i") ? STRING_INSERT : STRING_DELETE;
-    return new JSONOperationComponent._internal(type, m[key], pos);
+    var path = m["p"];
+    var data;
+    var type;
+    
+    m.forEach((k, v) {
+      if (k == "p") {
+        path = v;  
+      } else {
+        data = m[k];
+        type = k;
+      }
+    });
+    
+    return new JSONOperationComponent._internal(type, path, data);
   }
 
   Map toMap() {

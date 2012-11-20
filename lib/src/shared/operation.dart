@@ -21,7 +21,9 @@ abstract class OTType<S, O extends Operation> {
     }
   }
 
-  S apply(S snapshot, O op);
+  // TODO - S apply(S snapshot, O op);
+  // the JSON OT works on strings, lists and maps for now
+  apply(snapshot, O op);
 
   Operation compose(Operation op1, Operation op2) => op1.compose(op2);
 }

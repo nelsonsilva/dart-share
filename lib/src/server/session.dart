@@ -142,7 +142,8 @@ class Session {
           } else if (query.op != null || (query.meta != null && query.meta.path  != null )) {
             // TODO(nelsonsilva) - find another way to create the proper Operation type
             // the original sharejs code did not load the document here
-            task = model.load(query.doc).chain( (doc) {
+            task = model.load(query.doc).chain( (DocEntry entry) {
+              var doc = entry.doc;
               var op = doc.type.createOp(query.op);
               query.op = op;
 

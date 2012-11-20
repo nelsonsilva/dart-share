@@ -10,7 +10,6 @@ class DocEvents extends event.Events {
 
   get remoteOp => this["remoteOp"];
   get change => this["change"];
-  get changed => this["changed"];
   get error => this["error"];
   get open => this["open"];
   get closed => this["closed"];
@@ -45,11 +44,11 @@ class Doc implements event.Emitter<DocEvents>{
   Connection connection;
   String name;
   int version;
-  String snapshot;
+  var snapshot;
 
   // Has the document already been created?
   bool create;
-  bool _created = false;
+  bool created = false;
   String _state = "closed";
   bool _autoOpen = false;
 
@@ -79,7 +78,7 @@ class Doc implements event.Emitter<DocEvents>{
     // Its important that these event handlers are called with oldSnapshot.
     // The reason is that the OT type APIs might need to access the snapshots to
     // determine information about the received op.
-    on.changed.dispatch(new OpEvent(docOp, oldSnapshot: oldSnapshot));
+    on.change.dispatch(new OpEvent(docOp, oldSnapshot: oldSnapshot));
     if (isRemote) {
       on.remoteOp.dispatch(new OpEvent(docOp, oldSnapshot: oldSnapshot));
     }
@@ -119,7 +118,7 @@ class Doc implements event.Emitter<DocEvents>{
     var message = new Message(
       doc: name,
       open: true,
-      type: "text",
+      type: type.name,
       version: version,
       create: create,
       snapshot: snapshot
@@ -131,13 +130,13 @@ class Doc implements event.Emitter<DocEvents>{
             // The document has been successfully opened.
             _state = 'open';
             create = false; // Don't try and create the document again next time open() is called.
-            if (!_created) {
-              _created = ( (msg.create != null) && msg.create);
+            if (!created) {
+              created = ( (msg.create != null) && msg.create);
             }
 
             //@_setType msg.type if msg.type
 
-            if (_created) {
+            if (created) {
               snapshot = type.create();
             } else {
               //_created = false unless @created is true
