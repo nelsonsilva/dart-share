@@ -4,7 +4,7 @@ class TestJSON {
   static void run(){
     var JSON = OT["json"];
 
-    group('string', (){
+    group('JSON - Strings', (){
       test('Apply works', () {
         expect('abc', equals(JSON.apply('a', JSON.Op().SI('bc', 1))));
         expect('bc', equals(JSON.apply('abc', JSON.Op().SD('a', 0))));
@@ -29,7 +29,7 @@ class TestJSON {
 
     });
 
-    group('object', (){
+    group('JSON - objects', (){
       test('Apply sanity checks', () {
         expect({'x':'a', 'y':'b'}, equals(JSON.apply({'x':'a'}, JSON.Op().OI('y', 'b'))));
         expect({}, equals(JSON.apply({'x':'a'}, JSON.Op().OD('x', 'a'))));
@@ -50,7 +50,7 @@ class TestJSON {
       });*/
     });
 
-    group('list', (){
+    group('JSON - Lists', (){
       test('Apply inserts', () {
         expect(['a', 'b', 'c'], equals(JSON.apply(['b', 'c'], JSON.Op().LI(0, 'a'))));
         expect(['a', 'b', 'c'], equals(JSON.apply(['a', 'c'], JSON.Op().LI(1, 'b'))));

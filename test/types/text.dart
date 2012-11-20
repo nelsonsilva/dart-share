@@ -4,7 +4,7 @@ class TestText {
   static void run(){
     OTText Text = OT["text"];
 
-    group('compress', (){
+    group('Text compress', (){
       test('sanity checks', () {
         expect(Text.Op(), equals(Text.Op().compress()));
         expect(Text.Op().I('blah', 3), equals(Text.Op().I('blah', 3).compress()));
@@ -46,7 +46,7 @@ class TestText {
       });
     });
 
-    group('compose', (){
+    group('Text compose', (){
       test('sanity checks', () {
         expect(Text.Op(), equals(Text.compose(Text.Op(), Text.Op())));
         expect(Text.Op().I('x', 0), equals(Text.compose(Text.Op().I('x', 0), Text.Op())));
@@ -55,7 +55,7 @@ class TestText {
       });
     });
 
-    group('transform', (){
+    group('Text transform', (){
 
       test('sanity checks', () {
         expect(Text.Op(), equals(Text.Op().transform(Text.Op()).left));

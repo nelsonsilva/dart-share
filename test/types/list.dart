@@ -5,7 +5,7 @@ class TestList {
     OTList List = OT["list"];
     OTText Text = OT["text"];
 
-    group('list', (){
+    group('List', (){
       test('Apply inserts', () {
         expect(['a', 'b', 'c'], equals(List.apply(['b', 'c'], List.Op().I(0, 'a'))));
         expect(['a', 'b', 'c'], equals(List.apply(['a', 'c'], List.Op().I(1, 'b'))));
@@ -44,7 +44,7 @@ class TestList {
 
     });
 
-    group('list - text ops', (){
+    group('List - text ops', (){
       test('Paths are bumped when list elements are inserted or removed', () {
 
         expect(
