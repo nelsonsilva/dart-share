@@ -16,4 +16,5 @@ void runHtmlTests() {
   // tests that must run in a browser here
   TestText.run();
   TestList.run();
+  TestJSON.run();
 }

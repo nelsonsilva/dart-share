@@ -19,6 +19,6 @@ part 'integration.dart';
 void runTests() {
   TestText.run();
   TestList.run();
-  //TestJSON.run();
+  TestJSON.run();
   IntegrationTests.run();
 }
