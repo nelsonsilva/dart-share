@@ -62,8 +62,13 @@ class SharedTextArea {
       if (elem.value != _prevValue) {
         // IE constantly replaces unix newlines with \r\n. ShareJS docs
         // should only have unix newlines.
-        _prevValue = elem.value;
-        applyChange(doc.text, elem.value); //elem.value.replace /\r\n/g, '\n'
+        try {
+          applyChange(doc.text, elem.value); //elem.value.replace /\r\n/g, '\n'
+          _prevValue = elem.value;
+        } catch (e) {
+          print("[SharedTextArea] $e");
+          elem.value = _prevValue; // reset the text area to the original state
+        }
       }
     //});
   }

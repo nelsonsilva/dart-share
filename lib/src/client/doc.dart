@@ -229,7 +229,7 @@ class Doc implements event.Emitter<DocEvents>{
       //    console?.warn 'Unhandled meta op:', msg
 
     } else {
-      print('Unhandled document message: $msg');
+      print('Unhandled document message: ${msg.toJSON()}');
     }
   }
 
