@@ -30,7 +30,8 @@ startServer(String basePath) {
     });
   };
 
-  server.listen('127.0.0.1', 8000);
+  server.listen('0.0.0.0', 8000);
+  print("Example server running at http://0.0.0.0:8000");
 }
 
 void main() {
