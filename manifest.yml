@@ -1,0 +1,15 @@
+--- 
+applications: 
+  .: 
+    name: dart-share
+    instances: 1
+    framework: 
+      name: standalone
+      info: 
+        exec: 
+        description: Standalone Application
+        mem: 64M
+    command: ./deploy/run_example_server.sh
+    url: dart-share.cloudfoundry.com
+    runtime: java
+    mem: 128M

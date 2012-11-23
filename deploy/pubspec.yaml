@@ -1,0 +1,16 @@
+name: share
+version: 0.0.1
+description: >
+  A port of ShareJS to Dart.
+author: "Nelson Silva <nelson.silva@inevo.pt>"
+dependencies:
+  unittest: { sdk: unittest }
+  args: { sdk: args }
+  sockjs:  
+    hosted:
+      name: sockjs
+      url: http://nelsonsilva.github.com/sockjs-dart/
+  sockjs_client:
+    hosted:
+      name: sockjs_client
+      url: http://nelsonsilva.github.com/sockjs-dart/
