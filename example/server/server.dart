@@ -9,7 +9,7 @@ send404(HttpResponse response) {
 startServer(String basePath) {
   HttpServer server = new HttpServer();
 
-  share.attach(server);
+  share.attach(server, useSockJS: true);
 
   server.defaultRequestHandler = (HttpRequest request, HttpResponse response) {
     var path = request.path == '/' ? '/index.html' : request.path;

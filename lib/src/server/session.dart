@@ -41,6 +41,7 @@ class Session {
     var connect = agent.connect();
     connect.handleException((Exception e) {
       connection.send(new Message(auth: null, error: e.toString()));
+      print("[Session] Stopping connection");
       connection.stop();
     });
     connect.then( (_) {

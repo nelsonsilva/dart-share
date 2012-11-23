@@ -8,10 +8,10 @@ import 'dart:math' as Math;
 import 'package:share/share.dart';
 import 'package:share/events.dart' as event;
 
-part 'src/client/op_sink.dart';
-part 'src/client/connection.dart';
-part 'src/client/doc.dart';
-part "src/client/text_doc.dart";
+part 'client/op_sink.dart';
+part 'client/connection.dart';
+part 'client/doc.dart';
+part "client/text_doc.dart";
 
 class Client {
   Map<String, Connection> _connections;

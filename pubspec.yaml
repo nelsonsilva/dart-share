@@ -5,3 +5,7 @@ description: >
 author: "Nelson Silva <nelson.silva@inevo.pt>"
 dependencies:
   unittest: { sdk: unittest }
+  sockjs:
+    git: git://github.com/nelsonsilva/sockjs-dart.git
+  sockjs_client:
+    git: git://github.com/nelsonsilva/sockjs-dart-client.git

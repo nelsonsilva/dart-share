@@ -24,37 +24,3 @@ class ConnectionEvent extends event.Event {
   ConnectionEvent([this.msg, String type = 'message']) : super(type);
 }
 
-
-class WSConnection extends Connection {
-  WebSocketConnection conn;
-
-  WSConnection(this.conn) : super() {
-    var _lastSentDoc = null;
-    var _lastReceivedDoc = null;
-
-    conn.onMessage = (msg) {
-      print("c->s $msg");
-      on.message.dispatch( new ConnectionEvent(new Message.fromJSON(msg)) );
-    };
-
-    conn.onClosed = (int status, String reason) {
-      print('closed with $status for $reason');
-      _handleClose();
-    };
-
-  }
-
-  _handleClose() {
-    on.close.dispatch(new ConnectionEvent());
-  }
-
-  get ready => true;
-  abort() => conn.close();
-  stop() => conn.close();
-  send(Message msg) {
-    var str = msg.toJSON();
-    conn.send(str);
-  }
-
-}
-

@@ -11,6 +11,8 @@ import 'dart:math' as Math;
 import 'package:share/share.dart';
 import 'package:share/events.dart' as event;
 
+import 'package:sockjs/sockjs.dart' as sockjs;
+
 part 'src/server/doc.dart';
 part 'src/server/util/cache.dart';
 part 'src/server/util/stats.dart';
@@ -24,7 +26,10 @@ part 'src/server/connection.dart';
 part 'src/server/session.dart';
 part 'src/server/user_agent.dart';
 
-class Server {
+part 'src/server/websockets.dart';
+part 'src/server/sockjs.dart';
+
+abstract class Server {
   HttpServer httpServer;
   WebSocketHandler wsHandler;
   Model model;
@@ -32,18 +37,12 @@ class Server {
   Server(this.httpServer) {
     DB db = new DB();
     model = new Model(db);
-
-    wsHandler = new WebSocketHandler();
-
-    httpServer.addRequestHandler((req) => req.path == "/ws", wsHandler.onRequest);
-
-    wsHandler.onOpen = (WebSocketConnection conn) {
-      new Session(new WSConnection(conn), model);
-    };
   }
 }
 
-HttpServer attach(HttpServer httpServer) {
-  var share = new Server(httpServer);
-  return share.httpServer;
+HttpServer attach(HttpServer httpServer, {useSockJS: false}) {
+  var share = new WSServer(httpServer);
+  
+  if (useSockJS) new SockJSServer(httpServer);
+  return httpServer;
 }

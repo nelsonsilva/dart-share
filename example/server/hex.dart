@@ -6,7 +6,7 @@ import 'dart:math' as Math;
 
 import 'package:share/share.dart';
 import 'package:share/client.dart' as share;
-import 'package:share/src/client/ws/connection.dart' as ws;
+import 'package:share/client/ws/connection.dart' as ws;
 
 var JSON = OT["json"];
 
