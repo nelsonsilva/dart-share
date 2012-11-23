@@ -26,6 +26,7 @@ startServer(String basePath) {
     file.fullPath().then((fullPath) {
       file.exists().then((found) {
         if (found) {
+          response.contentLength = file.lengthSync();
           file.openInputStream().pipe(response.outputStream);
         } else {
           send404(response);
