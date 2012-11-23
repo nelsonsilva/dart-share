@@ -1,4 +1,4 @@
-library html_demo;
+library demo;
 
 import 'dart:html';
 import 'dart:isolate';

@@ -12,8 +12,11 @@ startServer(String basePath) {
   share.attach(server, useSockJS: true);
 
   server.defaultRequestHandler = (HttpRequest request, HttpResponse response) {
-    var path = request.path == '/' ? '/index.html' : request.path;
+    var path = request.path;
     var file = new File('${basePath}${path}');
+    if (!file.existsSync()) {
+      file = new File('${basePath}${path}/index.html');
+    }
     if (!file.existsSync()) {
       print("does not exist ${file.name}");
       return;

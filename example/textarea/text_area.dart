@@ -1,4 +1,4 @@
-part of html_demo;
+part of demo;
 
 class SharedTextArea {
   TextAreaElement elem;

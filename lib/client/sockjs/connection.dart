@@ -9,7 +9,7 @@ class Connection extends share.Connection {
   sockjs.Client _sockjs;
 
   doConnect(Completer<Connection> completer) {
-    _sockjs = new sockjs.Client('http://$origin/sockjs', protocolsWhitelist:['xhr-streaming'], debug: true);
+    _sockjs = new sockjs.Client('http://$origin/sockjs', protocolsWhitelist:['websocket', 'xhr-streaming'], debug: true);
     
     _sockjs.on.open.add( (_) => handleOpen(completer) );
     _sockjs.on.message.add( (m) => handleMessage(m.data) );
