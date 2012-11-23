@@ -1,3 +1,3 @@
 # Dart Share 
 
-Port of [ShareJS](http://http://sharejs.org/) to Dart.
+Port of [ShareJS](http://sharejs.org/) to Dart.
