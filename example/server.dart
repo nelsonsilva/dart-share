@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:args/args.dart';
 import 'package:share/server.dart' as share;
 
 send404(HttpResponse response) {
@@ -33,8 +34,21 @@ startServer(String basePath) {
     });
   };
 
-  server.listen('0.0.0.0', 8000);
-  print("Example server running at http://0.0.0.0:8000");
+  var parser = new ArgParser();
+
+  parser
+    ..addOption('port', defaultsTo: '8000')
+    ..addOption('host', defaultsTo: '0.0.0.0');
+
+  List<String> argv = (new Options()).arguments;
+
+  var opts = parser.parse(argv);
+  
+  var host = opts["host"],
+      port = int.parse(opts["port"]);
+  
+  server.listen(host, port);
+  print("Example server running at http://$host:$port");
 }
 
 void main() {
